@@ -1,0 +1,13 @@
+[package]
+name = "nix-query-tree-viewer"
+version = "0.1.0"
+authors = ["illabout"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gio = "0.8.0"
+gtk = "0.8.0"
+
+
