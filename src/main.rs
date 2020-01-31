@@ -7,6 +7,21 @@ use gtk::prelude::*;
 
 use std::env;
 
+fn connect_menu_buttons(app: &gtk::Application, builder: &gtk::Builder) {
+    let about_menu_item: gtk::MenuItem = builder.get_object("aboutMenuItem").unwrap();
+    let about_dialog: gtk::AboutDialog = builder.get_object("aboutDialog").unwrap();
+    about_menu_item.connect_activate(move |_| {
+        about_dialog.run();
+        about_dialog.hide();
+    });
+
+    let quit_menu_item: gtk::MenuItem = builder.get_object("quitMenuItem").unwrap();
+    quit_menu_item.connect_activate(clone!(@weak app => move |_| {
+        app.quit();
+    }));
+
+}
+
 fn run(app: &gtk::Application) {
     let glade_src = include_str!("../glade/ui.glade");
     // Then we call the Builder call.
@@ -30,17 +45,7 @@ fn run(app: &gtk::Application) {
 
     tree_view.append_column(&column);
 
-    let about_menu_item: gtk::MenuItem = builder.get_object("aboutMenuItem").unwrap();
-    let about_dialog: gtk::AboutDialog = builder.get_object("aboutDialog").unwrap();
-    about_menu_item.connect_activate(move |_| {
-        about_dialog.run();
-        about_dialog.hide();
-    });
-
-    let quit_menu_item: gtk::MenuItem = builder.get_object("quitMenuItem").unwrap();
-    quit_menu_item.connect_activate(clone!(@weak app => move |_| {
-        app.quit();
-    }));
+    connect_menu_buttons(app, &builder);
 
     window.show_all();
 }
