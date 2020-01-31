@@ -1,2 +1,5 @@
 /target
 **/*.rs.bk
+
+# glade saves backup files with a tilde at the end of the filename
+*~

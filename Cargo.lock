@@ -298,6 +298,7 @@ name = "nix-query-tree-viewer"
 version = "0.1.0"
 dependencies = [
  "gio 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glib 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gtk 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
