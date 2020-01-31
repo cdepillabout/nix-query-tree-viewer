@@ -24,17 +24,14 @@ fn run(app: &gtk::Application) {
     let tree_view: gtk::TreeView = builder.get_object("treeView").unwrap();
     let tree_store: gtk::TreeStore = gtk::TreeStore::new(&[glib::types::Type::String]);
     let top_level_iter = tree_store.insert_with_values(None, None, &[0], &[&String::from("test")]);
-    // let top_level_iter_1 = tree_store.insert_with_values(Some(&top_level_iter), None, &[0], &[&String::from("test")]);
-    // let top_level_iter_2 = tree_store.insert_with_values(None, None, &[0], &[&String::from("test")]);
-    // let top_level_iter_3 = tree_store.insert_with_values(None, None, &[0], &[&String::from("test")]);
 
     tree_view.set_model(Some(&tree_store));
 
     let renderer = gtk::CellRendererText::new();
 
     let column = gtk::TreeViewColumn::new();
-    column.set_title("the title");
-    column.pack_start(&renderer, true);
+    // column.set_title("the title");
+    column.pack_start(&renderer, false);
     column.add_attribute(&renderer, "text", 0);
 
     tree_view.append_column(&column);
