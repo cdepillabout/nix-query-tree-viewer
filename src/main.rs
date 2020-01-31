@@ -14,12 +14,6 @@ fn run(app: &gtk::Application) {
 
     let window: gtk::ApplicationWindow = builder.get_object("appWindow").unwrap();
     window.set_application(Some(app));
-    // let button: gtk::Button = builder.get_object("button1").unwrap();
-    // let dialog: gtk::MessageDialog = builder.get_object("messagedialog1").unwrap();
-    let about_menu_item: gtk::MenuItem = builder.get_object("aboutMenuItem").unwrap();
-    let quit_menu_item: gtk::MenuItem = builder.get_object("quitMenuItem").unwrap();
-
-    let about_dialog: gtk::AboutDialog = builder.get_object("aboutDialog").unwrap();
 
     let tree_view: gtk::TreeView = builder.get_object("treeView").unwrap();
     let tree_store: gtk::TreeStore = gtk::TreeStore::new(&[glib::types::Type::String]);
@@ -36,29 +30,20 @@ fn run(app: &gtk::Application) {
 
     tree_view.append_column(&column);
 
+    let about_menu_item: gtk::MenuItem = builder.get_object("aboutMenuItem").unwrap();
+    let about_dialog: gtk::AboutDialog = builder.get_object("aboutDialog").unwrap();
     about_menu_item.connect_activate(move |_| {
         about_dialog.run();
         about_dialog.hide();
     });
 
+    let quit_menu_item: gtk::MenuItem = builder.get_object("quitMenuItem").unwrap();
     quit_menu_item.connect_activate(clone!(@weak app => move |_| {
         app.quit();
     }));
 
     window.show_all();
 }
-
-// ApplicationExt.connect_activate:
-// fn connect_activate
-//      <F: Fn(&Self) + 'static>
-//      (&self, f: F) ->
-//      SignalHandlerId
-//
-// MenuItemExt.connect_activate:
-// fn connect_activate
-//      <F: Fn(&Self) + 'static>
-//      (&self, f: F) ->
-//      SignalHandlerId
 
 fn main() {
     let uiapp = gtk::Application::new(Some("org.gtkrsnotes.demo"),
