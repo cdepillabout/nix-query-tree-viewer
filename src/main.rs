@@ -1,11 +1,11 @@
-extern crate gtk;
 extern crate gio;
+extern crate gtk;
 
-use glib::clone;
 use gio::prelude::*;
+use glib::clone;
 use gtk::prelude::*;
-
 use std::env;
+use std::process::Command;
 
 fn connect_menu_buttons(app: &gtk::Application, builder: &gtk::Builder) {
     let about_menu_item: gtk::MenuItem = builder.get_object("aboutMenuItem").unwrap();
@@ -19,7 +19,6 @@ fn connect_menu_buttons(app: &gtk::Application, builder: &gtk::Builder) {
     quit_menu_item.connect_activate(clone!(@weak app => move |_| {
         app.quit();
     }));
-
 }
 
 fn run(app: &gtk::Application) {
@@ -51,9 +50,31 @@ fn run(app: &gtk::Application) {
 }
 
 fn main() {
-    let uiapp = gtk::Application::new(Some("org.gtkrsnotes.demo"),
-                                      gio::ApplicationFlags::FLAGS_NONE)
-                                 .expect("Application::new failed");
+    // nix-store --query --tree /nix/store/jymg0kanmlgbcv35wxd8d660rw0fawhv-hello-2.10.drv
+    // nix-store --query --tree /nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+    //
+    // TODO: Make sure to parse the [...] at the end of some entries to be able to go there
+
+    let nix_store_stdout_raw = Command::new("nix-store")
+        .args(&[
+            "--query",
+            "--tree",
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10",
+        ])
+        .output()
+        .expect("failed to execute nix-store")
+        .stdout;
+
+    let nix_store_stdout = String::from_utf8(nix_store_stdout_raw)
+        .expect("failed to convert nix-store output to utf8");
+
+    println!("nix-store output: {}", nix_store_stdout);
+
+    let uiapp = gtk::Application::new(
+        Some("org.gtkrsnotes.demo"),
+        gio::ApplicationFlags::FLAGS_NONE,
+    )
+    .expect("Application::new failed");
     uiapp.connect_activate(run);
     uiapp.run(&env::args().collect::<Vec<_>>());
 }
