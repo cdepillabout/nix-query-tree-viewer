@@ -1,12 +1,14 @@
-use ego_tree::{NodeMut, Tree};
-use nom::character::complete::space1;
-use nom::{do_parse, map, named, opt, tag, take_till, IResult};
+use super::tree::{Tree};
+use nom::{alt, do_parse, map, named, opt, tag, take_till, IResult};
+use nom::character::complete::{newline, space1};
+use nom::combinator::complete;
+use nom::multi::{many0, many_m_n};
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
 
 #[derive(Clone, Debug, PartialEq)]
-struct NixQueryDrv(PathBuf);
+pub struct NixQueryDrv(PathBuf);
 
 impl From<&str> for NixQueryDrv {
     fn from(item: &str) -> Self {
@@ -26,7 +28,7 @@ named!(parse_nix_query_drv<&str, NixQueryDrv>,
     map!(take_till!(char::is_whitespace), NixQueryDrv::from));
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-enum Recurse {
+pub enum Recurse {
     Yes,
     No,
 }
@@ -35,7 +37,7 @@ named!(parse_recurse<&str, &str>,
     tag!("[...]"));
 
 #[derive(Clone, Debug, PartialEq)]
-struct NixQueryEntry(NixQueryDrv, Recurse);
+pub struct NixQueryEntry(pub NixQueryDrv, pub Recurse);
 
 named!(parse_nix_query_entry<&str, NixQueryEntry>,
     do_parse!(
@@ -49,106 +51,58 @@ named!(parse_nix_query_entry<&str, NixQueryEntry>,
         (NixQueryEntry(drv, opt_recurse.unwrap_or(Recurse::No)))
     ));
 
-struct NixQueryTree(Tree<NixQueryEntry>);
-
-// named!(parse_nix_query_tree<&str, NixQueryTree>,
-//     do_parse!(
-//         top_drv: parse_nix_query_drv >>
-//         space1 >>
-//         (ego_tree
-
-//     ));
+#[derive(Clone, Debug, PartialEq)]
+pub struct NixQueryTree(pub Tree<NixQueryEntry>);
 
 named!(parse_branch_start<&str, &str>,
     tag!("+---"));
 
-fn parse_branch(tree: &mut NodeMut<NixQueryEntry>, level: u32) -> impl Fn(&str) -> IResult<&str, ()> {
-    |input| {
-        let (input, _) = parse_branch_start(input)?;
+named!(parse_extra_level<&str, &str>,
+    alt!(tag!("|   ") | tag!("    ")));
+
+fn parse_extra_levels(level: u32) -> impl Fn(&str) -> IResult<&str, ()> {
+    move |input| {
+        let (input, _) =
+            many_m_n(level as usize, level as usize, parse_extra_level)(input)?;
+        Ok((input, ()))
     }
 }
 
-fn parse_nix_query_tree(input: &str) -> IResult<&str, NixQueryTree> {
-    let (input, top_drv): (&str, NixQueryDrv) = parse_nix_query_drv(input)?;
-    let (input, _) = space1(input)?;
-    let top_entry = NixQueryEntry(top_drv, Recurse::No);
-    let mut tree = Tree::new(top_entry);
-    let (input
-    Ok(("", NixQueryTree(tree)))
+fn parse_single_branch(level: u32) -> impl Fn(&str) -> IResult<&str, NixQueryEntry> {
+    move |input| {
+        let (input, _) = parse_extra_levels(level)(input)?;
+        let (input, _) = parse_branch_start(input)?;
+        let (input, nix_query_entry) = parse_nix_query_entry(input)?;
+        let (input, _) = newline(input)?;
+        Ok((input,nix_query_entry))
+    }
 }
 
-// pub fn take(count: usize) -> impl Fn(&[u8]) -> IResult<&[u8], &[u8]>
-// where
-// {
-//   move |i: &[u8]| {
-//     if i.len() < count {
-//       Err(Err::Error((i, ErrorKind::Eof))
-//     } else {
-//       Ok(i.split_at(count))
-//     }
-//   }
-// }
+fn parse_branch_with_children(level: u32) -> impl Fn(&str) -> IResult<&str, Tree<NixQueryEntry>> {
+    move |input| {
+        let (input, nix_query_entry) = parse_single_branch(level)(input)?;
+        let (input, children) = parse_branches(level + 1)(input)?;
+        Ok((input, Tree::new(nix_query_entry, children)))
+    }
+}
 
-// named!(parse_inner_func_ar_2<&str, Expr>,
-//     do_parse!(
-//         func_ar_2: parse_func_ar_2_name >>
-//         many1!(tag!(" ")) >>
-//         expr1: parse_expr >>
-//         many1!(tag!(" ")) >>
-//         expr2: parse_expr >>
-//         (Expr::FuncAr2(func_ar_2, bx(expr1), bx(expr2)))
-//     ));
+fn parse_branches(level: u32) -> impl Fn(&str) -> IResult<&str, Vec<Tree<NixQueryEntry>>> {
+    move |input| {
+        let (input, children) =
+            many0(complete(parse_branch_with_children(level)))(input)?;
+        Ok((input, children))
+    }
 
-// named!(parse_var<&str, Expr>,
-//     map!(char('x'), |_| Expr::Var));
+}
 
-// named!(parse_num<&str, Expr>,
-//     map!(float, Expr::Num));
-
-// named!(parse_func_ar_1_name<&str, FuncAr1>,
-//     alt!(
-//         tag!("ln")  => { |_| FuncAr1::Ln  } |
-//         tag!("cos") => { |_| FuncAr1::Cos } |
-//         tag!("sin") => { |_| FuncAr1::Sin } |
-//         tag!("tan") => { |_| FuncAr1::Tan } |
-//         tag!("exp") => { |_| FuncAr1::Exp }
-//     ));
-
-// named!(parse_func_ar_2_name<&str, FuncAr2>,
-//     alt!(
-//         tag!("+") => { |_| FuncAr2::Plus  } |
-//         tag!("-") => { |_| FuncAr2::Minus } |
-//         tag!("*") => { |_| FuncAr2::Times } |
-//         tag!("/") => { |_| FuncAr2::Div } |
-//         tag!("^") => { |_| FuncAr2::Pow }
-//     ));
-
-// named!(parse_inner_func_ar_1<&str, Expr>,
-//     do_parse!(
-//         func_ar_1: parse_func_ar_1_name >>
-//         many1!(tag!(" ")) >>
-//         expr: parse_expr >>
-//         (Expr::FuncAr1(func_ar_1, bx(expr)))
-//     ));
-
-// named!(parse_inner_func_ar_2<&str, Expr>,
-//     do_parse!(
-//         func_ar_2: parse_func_ar_2_name >>
-//         many1!(tag!(" ")) >>
-//         expr1: parse_expr >>
-//         many1!(tag!(" ")) >>
-//         expr2: parse_expr >>
-//         (Expr::FuncAr2(func_ar_2, bx(expr1), bx(expr2)))
-//     ));
-
-// named!(parse_inner_func<&str, Expr>,
-//     alt!(parse_inner_func_ar_1 | parse_inner_func_ar_2));
-
-// named!(parse_func<&str, Expr>,
-//     delimited!(tag!("("), parse_inner_func, tag!(")")));
-
-// named!(parse_expr<&str,Expr>,
-//     alt!(parse_var | parse_num | parse_func));
+pub fn parse_nix_query_tree(input: &str) -> IResult<&str, NixQueryTree> {
+    let (input, top_drv): (&str, NixQueryDrv) = parse_nix_query_drv(input)?;
+    let (input, _) = newline(input)?;
+    let top_entry = NixQueryEntry(top_drv, Recurse::No);
+    let (input, children) = parse_branches(0)(input)?;
+    let tree = Tree::new(top_entry, children);
+    Ok((input, NixQueryTree(tree)))
+}
 
 pub fn exec_command() -> String {
     let nix_store_stdout_raw = Command::new("nix-store")
@@ -169,14 +123,11 @@ pub fn exec_command() -> String {
     nix_store_stdout
 }
 
-// /nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
-// +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27
-// |   +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27 [...]
-// +---/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
-
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use indoc::indoc;
 
     #[test]
     fn test_parse_nix_query_drv() {
@@ -203,5 +154,122 @@ mod tests {
         let nix_query_entry: NixQueryEntry = NixQueryEntry(raw_path.into(), Recurse::Yes);
         let r = parse_nix_query_entry(raw_input);
         assert_eq!(r, Ok(("\n", nix_query_entry)));
+    }
+
+    #[test]
+    fn test_parse_nix_query_tree_simple() {
+        let raw_input = indoc!(
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+            +---/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+            ");
+        let hello_drv: NixQueryDrv = 
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let actual_tree = 
+            Tree::new(
+                NixQueryEntry(hello_drv.clone(), Recurse::No),
+                vec![
+                    Tree::singleton(NixQueryEntry(hello_drv, Recurse::Yes))
+                ],
+            );
+
+        let r = parse_nix_query_tree(raw_input);
+        assert_eq!(r, Ok(("", NixQueryTree(actual_tree))));
+    }
+
+    #[test]
+    fn test_parse_branch_start() {
+        let raw_input = "+---";
+        let r = parse_branch_start(raw_input);
+        assert_eq!(r, Ok(("", "+---")));
+    }
+
+    #[test]
+    fn test_parse_single_branch() {
+        let raw_input = indoc!("
+                +---/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+                ");
+        let hello_drv: NixQueryDrv = 
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let actual_tree = NixQueryEntry(hello_drv.clone(), Recurse::Yes);
+
+        let r = parse_single_branch(0)(raw_input);
+        assert_eq!(r, Ok(("", actual_tree)));
+    }
+
+    #[test]
+    fn test_parse_branch_with_children_no_children() {
+        let raw_input = indoc!("
+                +---/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+                ");
+        let hello_drv: NixQueryDrv = 
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let actual_tree = 
+            Tree::singleton(NixQueryEntry(hello_drv.clone(), Recurse::Yes));
+
+        let r = parse_branch_with_children(0)(raw_input);
+        assert_eq!(r, Ok(("", actual_tree)));
+    }
+
+    #[test]
+    fn test_parse_empty_branches() {
+        let raw_input = "foobar";
+        let actual_children = vec![];
+
+        let r = parse_branches(0)(raw_input);
+        assert_eq!(r, Ok(("foobar", actual_children)));
+    }
+
+    #[test]
+    fn test_parse_nix_query_tree_simple_multi_children() {
+        let raw_input = indoc!(
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+            +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27
+            +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27 [...]
+            +---/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+            ");
+        let hello_drv: NixQueryDrv = 
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let glibc_drv: NixQueryDrv = 
+            "/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27".into();
+        let actual_tree = 
+            Tree::new(
+                NixQueryEntry(hello_drv.clone(), Recurse::No),
+                vec![
+                    Tree::singleton(NixQueryEntry(glibc_drv.clone(), Recurse::No)),
+                    Tree::singleton(NixQueryEntry(glibc_drv, Recurse::Yes)),
+                    Tree::singleton(NixQueryEntry(hello_drv, Recurse::Yes)),
+                ],
+            );
+
+        let r = parse_nix_query_tree(raw_input);
+        assert_eq!(r, Ok(("", NixQueryTree(actual_tree))));
+    }
+
+    #[test]
+    fn test_parse_nix_query_tree_simple_multi_levels() {
+        let raw_input = indoc!(
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+            +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27
+            |   +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27 [...]
+            +---/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+            ");
+        let hello_drv: NixQueryDrv = 
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let glibc_drv: NixQueryDrv = 
+            "/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27".into();
+        let actual_tree = 
+            Tree::new(
+                NixQueryEntry(hello_drv.clone(), Recurse::No),
+                vec![
+                    Tree::new(
+                        NixQueryEntry(glibc_drv.clone(), Recurse::No),
+                        vec![Tree::singleton(NixQueryEntry(glibc_drv, Recurse::Yes))]
+                    ),
+                    Tree::singleton(NixQueryEntry(hello_drv, Recurse::Yes))
+                ],
+            );
+
+        let r = parse_nix_query_tree(raw_input);
+        assert_eq!(r, Ok(("", NixQueryTree(actual_tree))));
     }
 }
