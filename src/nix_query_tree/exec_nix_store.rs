@@ -4,13 +4,15 @@ use std::process::{Output, Command};
 
 use super::NixQueryTree;
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum ExecNixStoreErr {
-    CommandErr(std::io::Error),
-    Utf8Err(std::string::FromUtf8Error),
+    CommandErr(String),
+    Utf8Err(String),
     NixStoreErr(String),
     ParseErr(String),
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct ExecNixStoreRes {
     pub raw: String,
     pub tree: NixQueryTree,
@@ -30,13 +32,13 @@ pub fn exec_nix_store(nix_store_path: PathBuf) -> Result<ExecNixStoreRes, ExecNi
             &nix_store_path.to_string_lossy(),
         ])
         .output()
-        .map_err(ExecNixStoreErr::CommandErr)?;
+        .map_err(|io_err| ExecNixStoreErr::CommandErr(io_err.to_string()))?;
 
     if nix_store_output.status.success() {
         let stdout = from_utf8(nix_store_output.stdout)?;
         super::parsing::nix_query_tree_parser(&stdout.clone())
             .map(|nix_query_tree| ExecNixStoreRes::new(stdout, nix_query_tree))
-            .map_err(|nom_err| ExecNixStoreErr::ParseErr(format!("{}", nom_err)))
+            .map_err(|nom_err| ExecNixStoreErr::ParseErr(nom_err.to_string()))
     } else {
         let stderr = from_utf8(nix_store_output.stderr)?;
         Err(ExecNixStoreErr::NixStoreErr(stderr))
@@ -44,5 +46,5 @@ pub fn exec_nix_store(nix_store_path: PathBuf) -> Result<ExecNixStoreRes, ExecNi
 }
 
 fn from_utf8(i: Vec<u8>) -> Result<String, ExecNixStoreErr> {
-    String::from_utf8(i).map_err(ExecNixStoreErr::Utf8Err)
+    String::from_utf8(i).map_err(|utf8_err| ExecNixStoreErr::Utf8Err(utf8_err.to_string()))
 }
