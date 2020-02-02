@@ -3,6 +3,7 @@ extern crate nix_query_tree_viewer;
 use indoc::indoc;
 
 use nix_query_tree_viewer::nix_query_tree::*;
+use nix_query_tree_viewer::nix_query_tree::parsing::*;
 use nix_query_tree_viewer::tree::*;
 
 #[test]
@@ -242,6 +243,6 @@ fn test_parse_nix_query_tree_complicated() {
                     ] 
                 } 
             );
-    let r = parse_nix_query_tree(raw_input);
-    assert_eq!(r, Ok(("", actual_tree)));
+    let r = nix_query_tree_parser(raw_input);
+    assert_eq!(r, Ok(actual_tree));
 }
