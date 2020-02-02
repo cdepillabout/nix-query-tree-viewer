@@ -3,7 +3,9 @@ use glib::clone;
 use gtk::prelude::*;
 use std::path::Path;
 
+use super::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree};
 use super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreErr, NixStoreRes};
+use super::tree::Tree;
 
 fn connect_menu_buttons(app: gtk::Application, builder: gtk::Builder) {
     let about_menu_item: gtk::MenuItem = builder.get_object("aboutMenuItem").unwrap();
@@ -25,8 +27,18 @@ fn show_msg_in_statusbar(builder: gtk::Builder, msg: &str) {
     statusbar.push(0, msg);
 }
 
+fn insert_children_into_tree_store(tree_store: gtk::TreeStore, parent: gtk::TreeIter, children: &[Tree<NixQueryEntry>]) {
+    for child in children {
+        let _: &Tree<NixQueryEntry> = child;
+    }
+}
+
 fn insert_into_tree_store(tree_store: gtk::TreeStore, nix_store_res: &NixStoreRes) {
-    let _top_level_iter = tree_store.insert_with_values(None, None, &[0], &[&String::from("test")]);
+    let tree: &NixQueryTree = &nix_store_res.tree;
+    let Tree{item, children}: &Tree<NixQueryEntry> = &tree.0;
+    let top_entry: &NixQueryDrv = &item.0;
+    let top_level_iter: gtk::TreeIter = tree_store.insert_with_values(None, None, &[0], &[&top_entry.to_string()]);
+    insert_children_into_tree_store(tree_store, top_level_iter, children);
 }
 
 fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_err: &NixStoreErr) {

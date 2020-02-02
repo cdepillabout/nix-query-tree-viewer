@@ -22,6 +22,12 @@ impl FromStr for NixQueryDrv {
     }
 }
 
+impl std::fmt::Display for NixQueryDrv {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.to_string_lossy())
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Recurse {
     Yes,
