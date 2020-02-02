@@ -2,8 +2,9 @@
 use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
+use std::path::Path;
 
-use super::nix_query_tree::exec_nix_store::{ExecNixStoreErr, ExecNixStoreRes};
+use super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreErr, NixStoreRes};
 
 fn connect_menu_buttons(app: gtk::Application, builder: gtk::Builder) {
     let about_menu_item: gtk::MenuItem = builder.get_object("aboutMenuItem").unwrap();
@@ -19,7 +20,7 @@ fn connect_menu_buttons(app: gtk::Application, builder: gtk::Builder) {
     }));
 }
 
-fn render_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) {
+fn render_tree_view(builder: gtk::Builder, nix_store_res: &NixStoreRes) {
     let tree_view: gtk::TreeView = builder.get_object("treeView").unwrap();
     let tree_store: gtk::TreeStore = gtk::TreeStore::new(&[glib::types::Type::String]);
     let _top_level_iter = tree_store.insert_with_values(None, None, &[0], &[&String::from("test")]);
@@ -36,12 +37,15 @@ fn render_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) {
     tree_view.append_column(&column);
 }
 
-fn render_nix_store_err(builder: gtk::Builder, nix_store_res: &ExecNixStoreErr) {
+fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_err: &NixStoreErr) {
+    let error_dialog: gtk::MessageDialog =
+        builder.get_object("errorDialog").unwrap();
+    error_dialog.set_property_secondary_text(Some(&format!("Error running `nix-store --query --tree {}`:\n\n{}", nix_store_path.to_string_lossy(), nix_store_err)));
 }
 
-fn render_nix_store_res(builder: gtk::Builder, nix_store_res: &Result<ExecNixStoreRes, ExecNixStoreErr>) {
-    match nix_store_res {
-        Err(err) => render_nix_store_err(builder, err),
+fn render_nix_store_res(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) {
+    match &nix_store_res.res {
+        Err(err) => render_nix_store_err(builder, &nix_store_res.nix_store_path, err),
         Ok(res) => render_tree_view(builder, res),
     }
 }
@@ -51,7 +55,7 @@ fn create_builder() -> gtk::Builder {
     gtk::Builder::new_from_string(glade_src)
 }
 
-fn app_activate(nix_store_res: Result<ExecNixStoreRes, ExecNixStoreErr>, app: gtk::Application) {
+fn app_activate(nix_store_res: ExecNixStoreRes, app: gtk::Application) {
     let builder = create_builder();
 
     let window: gtk::ApplicationWindow = builder.get_object("appWindow").unwrap();
@@ -64,7 +68,7 @@ fn app_activate(nix_store_res: Result<ExecNixStoreRes, ExecNixStoreErr>, app: gt
     window.show_all();
 }
 
-pub fn run(nix_store_res: Result<ExecNixStoreRes, ExecNixStoreErr>) {
+pub fn run(nix_store_res: ExecNixStoreRes) {
     let uiapp = gtk::Application::new(
         Some("org.gtkrsnotes.demo"),
         gio::ApplicationFlags::FLAGS_NONE,
