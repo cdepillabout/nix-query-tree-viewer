@@ -95,7 +95,7 @@
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">True</property>
+            <property name="fill">False</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -103,14 +103,28 @@
           <object class="GtkTreeView" id="treeView">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="search_column">0</property>
+            <property name="enable_tree_lines">True</property>
+            <property name="activate_on_single_click">True</property>
             <child internal-child="selection">
               <object class="GtkTreeSelection"/>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStatusbar">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
