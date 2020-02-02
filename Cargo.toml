@@ -12,6 +12,7 @@ glib = "0.9.1"
 gio = "0.8.0"
 gtk = "0.8.0"
 nom = "5.1.0"
+structopt = "0.3.9"
 
 [dev-dependencies]
 indoc = "0.3.4"
