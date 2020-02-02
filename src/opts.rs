@@ -6,15 +6,7 @@ use structopt::StructOpt;
 pub struct Opts {
     /// PATH in /nix/store to view references of
     #[structopt(name = "PATH", parse(from_os_str))]
-    pub output: PathBuf,
-
-    // /// Where to write the output: to `stdout` or `file`
-    // #[structopt(short)]
-    // pub out_type: String,
-
-    // /// File name: only required when `out` is set to `file`
-    // #[structopt(name = "FILE", required_if("out_type", "file"))]
-    // pub file_name: String,
+    pub nix_store_path: PathBuf,
 }
 
 impl Opts {
