@@ -19,7 +19,7 @@ fn connect_menu_buttons(app: gtk::Application, builder: gtk::Builder) {
     }));
 }
 
-fn render_tree_view(builder: gtk::Builder, nix_store_res: &Result<ExecNixStoreRes, ExecNixStoreErr>) {
+fn render_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) {
     let tree_view: gtk::TreeView = builder.get_object("treeView").unwrap();
     let tree_store: gtk::TreeStore = gtk::TreeStore::new(&[glib::types::Type::String]);
     let _top_level_iter = tree_store.insert_with_values(None, None, &[0], &[&String::from("test")]);
@@ -36,6 +36,16 @@ fn render_tree_view(builder: gtk::Builder, nix_store_res: &Result<ExecNixStoreRe
     tree_view.append_column(&column);
 }
 
+fn render_nix_store_err(builder: gtk::Builder, nix_store_res: &ExecNixStoreErr) {
+}
+
+fn render_nix_store_res(builder: gtk::Builder, nix_store_res: &Result<ExecNixStoreRes, ExecNixStoreErr>) {
+    match nix_store_res {
+        Err(err) => render_nix_store_err(builder, err),
+        Ok(res) => render_tree_view(builder, res),
+    }
+}
+
 fn create_builder() -> gtk::Builder {
     let glade_src = include_str!("../glade/ui.glade");
     gtk::Builder::new_from_string(glade_src)
@@ -47,7 +57,7 @@ fn app_activate(nix_store_res: Result<ExecNixStoreRes, ExecNixStoreErr>, app: gt
     let window: gtk::ApplicationWindow = builder.get_object("appWindow").unwrap();
     window.set_application(Some(&app));
 
-    render_tree_view(builder.clone(), &nix_store_res);
+    render_nix_store_res(builder.clone(), &nix_store_res);
 
     connect_menu_buttons(app, builder);
 
