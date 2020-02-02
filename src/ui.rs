@@ -19,27 +19,15 @@ fn connect_menu_buttons(app: gtk::Application, builder: gtk::Builder) {
     }));
 }
 
-fn render_tree_view(builder: gtk::Builder, nix_store_res: &NixStoreRes) {
-    let tree_view: gtk::TreeView = builder.get_object("treeView").unwrap();
-    let tree_store: gtk::TreeStore = gtk::TreeStore::new(&[glib::types::Type::String]);
-    let _top_level_iter = tree_store.insert_with_values(None, None, &[0], &[&String::from("test")]);
-
-    tree_view.set_model(Some(&tree_store));
-
-    let renderer = gtk::CellRendererText::new();
-
-    let column = gtk::TreeViewColumn::new();
-    // column.set_title("the title");
-    column.pack_start(&renderer, false);
-    column.add_attribute(&renderer, "text", 0);
-
-    tree_view.append_column(&column);
-}
-
 fn show_msg_in_statusbar(builder: gtk::Builder, msg: &str) {
     let statusbar: gtk::Statusbar = builder.get_object("statusbar").unwrap();
     statusbar.remove_all(0);
     statusbar.push(0, msg);
+}
+
+
+fn insert_into_tree_store(tree_store: gtk::TreeStore, nix_store_res: &NixStoreRes) {
+    let _top_level_iter = tree_store.insert_with_values(None, None, &[0], &[&String::from("test")]);
 }
 
 fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_err: &NixStoreErr) {
@@ -61,10 +49,10 @@ fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_
     );
 }
 
-fn render_nix_store_res(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) {
+fn render_nix_store_res(builder: gtk::Builder, tree_store: gtk::TreeStore, nix_store_res: &ExecNixStoreRes) {
     match &nix_store_res.res {
         Err(err) => render_nix_store_err(builder, &nix_store_res.nix_store_path, err),
-        Ok(res) => render_tree_view(builder, res),
+        Ok(res) => insert_into_tree_store(tree_store, res),
     }
 }
 
@@ -73,13 +61,33 @@ fn create_builder() -> gtk::Builder {
     gtk::Builder::new_from_string(glade_src)
 }
 
+fn setup_tree_view(builder: gtk::Builder) -> gtk::TreeStore {
+    let tree_view: gtk::TreeView = builder.get_object("treeView").unwrap();
+    let tree_store: gtk::TreeStore = gtk::TreeStore::new(&[glib::types::Type::String]);
+
+    tree_view.set_model(Some(&tree_store));
+
+    let renderer = gtk::CellRendererText::new();
+
+    let column = gtk::TreeViewColumn::new();
+    column.set_title("the title");
+    column.pack_start(&renderer, false);
+    column.add_attribute(&renderer, "text", 0);
+
+    tree_view.append_column(&column);
+
+    tree_store
+}
+
 fn app_activate(nix_store_res: ExecNixStoreRes, app: gtk::Application) {
     let builder = create_builder();
 
     let window: gtk::ApplicationWindow = builder.get_object("appWindow").unwrap();
     window.set_application(Some(&app));
 
-    render_nix_store_res(builder.clone(), &nix_store_res);
+    let tree_store = setup_tree_view(builder.clone());
+
+    render_nix_store_res(builder.clone(), tree_store, &nix_store_res);
 
     connect_menu_buttons(app, builder);
 
