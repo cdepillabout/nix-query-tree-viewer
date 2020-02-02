@@ -25,7 +25,6 @@ fn show_msg_in_statusbar(builder: gtk::Builder, msg: &str) {
     statusbar.push(0, msg);
 }
 
-
 fn insert_into_tree_store(tree_store: gtk::TreeStore, nix_store_res: &NixStoreRes) {
     let _top_level_iter = tree_store.insert_with_values(None, None, &[0], &[&String::from("test")]);
 }
@@ -49,7 +48,11 @@ fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_
     );
 }
 
-fn render_nix_store_res(builder: gtk::Builder, tree_store: gtk::TreeStore, nix_store_res: &ExecNixStoreRes) {
+fn render_nix_store_res(
+    builder: gtk::Builder,
+    tree_store: gtk::TreeStore,
+    nix_store_res: &ExecNixStoreRes,
+) {
     match &nix_store_res.res {
         Err(err) => render_nix_store_err(builder, &nix_store_res.nix_store_path, err),
         Ok(res) => insert_into_tree_store(tree_store, res),
