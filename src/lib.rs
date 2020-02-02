@@ -58,7 +58,7 @@ pub fn default_main() {
 
     let opts = opts::Opts::parse_from_args();
 
-    let nix_store_stdout = nix_query_tree::exec_command(opts.nix_store_path);
+    let nix_store_stdout = nix_query_tree::exec_nix_store::exec_nix_store(opts.nix_store_path);
 
     let uiapp = gtk::Application::new(
         Some("org.gtkrsnotes.demo"),
