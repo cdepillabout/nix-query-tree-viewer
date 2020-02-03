@@ -1,12 +1,5 @@
 
-* {
-  font-size: 20px;
+.large-font {
+  font-size: 16px;
 }
 
-#treeView {
-  font-size: 20px;
-}
-
-* {
-  background-color: red;
-}

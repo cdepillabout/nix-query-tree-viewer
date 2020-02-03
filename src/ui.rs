@@ -1,3 +1,5 @@
+pub mod builder;
+
 use gdk::prelude::*;
 use gio::prelude::*;
 use glib::clone;
@@ -7,23 +9,25 @@ use std::path::Path;
 use super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreErr, NixStoreRes};
 use super::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse};
 use super::tree::Tree;
+use builder::*;
+
 
 fn connect_menu_buttons(app: gtk::Application, builder: gtk::Builder) {
-    let about_menu_item: gtk::MenuItem = builder.get_object("aboutMenuItem").unwrap();
-    let about_dialog: gtk::AboutDialog = builder.get_object("aboutDialog").unwrap();
+    let about_menu_item: gtk::MenuItem = builder.get_object_expect("aboutMenuItem");
+    let about_dialog: gtk::AboutDialog = builder.get_object_expect("aboutDialog");
     about_menu_item.connect_activate(move |_| {
         about_dialog.run();
         about_dialog.hide();
     });
 
-    let quit_menu_item: gtk::MenuItem = builder.get_object("quitMenuItem").unwrap();
+    let quit_menu_item: gtk::MenuItem = builder.get_object_expect("quitMenuItem");
     quit_menu_item.connect_activate(clone!(@weak app => move |_| {
         app.quit();
     }));
 }
 
 fn show_msg_in_statusbar(builder: gtk::Builder, msg: &str) {
-    let statusbar: gtk::Statusbar = builder.get_object("statusbar").unwrap();
+    let statusbar: gtk::Statusbar = builder.get_object_expect("statusbar");
     statusbar.remove_all(0);
     statusbar.push(0, msg);
 }
@@ -65,7 +69,7 @@ fn insert_into_tree_store(tree_store: gtk::TreeStore, nix_store_res: &NixStoreRe
 }
 
 fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_err: &NixStoreErr) {
-    let error_dialog: gtk::MessageDialog = builder.get_object("errorDialog").unwrap();
+    let error_dialog: gtk::MessageDialog = builder.get_object_expect("errorDialog");
     let error_msg = &format!(
         "Error running `nix-store --query --tree {}`:\n\n{}",
         nix_store_path.to_string_lossy(),
@@ -134,8 +138,8 @@ fn create_columns(tree_view: gtk::TreeView) {
     create_link_column(tree_view);
 }
 
-fn setup_tree_view(builder: gtk::Builder) -> gtk::TreeStore {
-    let tree_view: gtk::TreeView = builder.get_object("treeView").unwrap();
+fn setup_tree_view(builder: gtk::Builder) -> (gtk::TreeStore, gtk::TreeView) {
+    let tree_view: gtk::TreeView = builder.get_object_expect("treeView");
     let tree_store: gtk::TreeStore =
         gtk::TreeStore::new(&[glib::types::Type::String, glib::types::Type::String]);
 
@@ -147,7 +151,7 @@ fn setup_tree_view(builder: gtk::Builder) -> gtk::TreeStore {
         toggle_row(tree_view_ref.clone(), tree_path.clone(), false);
     });
 
-    tree_store
+    (tree_store, tree_view)
 }
 
 fn setup_css(window: gtk::Window) {
@@ -175,14 +179,17 @@ fn setup_css(window: gtk::Window) {
 fn app_activate(nix_store_res: ExecNixStoreRes, app: gtk::Application) {
     let builder = create_builder();
 
-    let window: gtk::ApplicationWindow = builder.get_object("appWindow").unwrap();
+    let window: gtk::ApplicationWindow = builder.get_object_expect("appWindow");
     window.set_application(Some(&app));
 
     setup_css(window.clone().upcast());
 
-    let tree_store = setup_tree_view(builder.clone());
+    let (tree_store, tree_view) = setup_tree_view(builder.clone());
 
     render_nix_store_res(builder.clone(), tree_store, &nix_store_res);
+
+    // expand the first row of the tree view
+    tree_view.expand_row(&gtk::TreePath::new_first(), false);
 
     connect_menu_buttons(app, builder);
 

@@ -115,6 +115,9 @@
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>
                 </child>
+                <style>
+                  <class name="large-font"/>
+                </style>
               </object>
             </child>
           </object>
