@@ -191,7 +191,7 @@ fn app_activate(nix_store_res: ExecNixStoreRes, app: gtk::Application) {
 
 pub fn run(nix_store_res: ExecNixStoreRes) {
     let uiapp = gtk::Application::new(
-        Some("org.gtkrsnotes.demo"),
+        Some("com.github.cdepillabout.nix-query-tree-viewer"),
         gio::ApplicationFlags::FLAGS_NONE,
     )
     .expect("Application::new failed");
