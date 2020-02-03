@@ -41,7 +41,8 @@ fn insert_child_into_tree_store(
     tree_store: gtk::TreeStore,
     parent: Option<gtk::TreeIter>,
     child: &Tree<NixQueryEntry>,
-) {
+)
+{
     let Tree { item, children }: &Tree<NixQueryEntry> = child;
     let drv: &NixQueryDrv = &item.0;
     let drv_str = drv.to_string();
