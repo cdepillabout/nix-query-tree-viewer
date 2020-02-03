@@ -11,7 +11,6 @@ use super::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse};
 use super::tree::Tree;
 use builder::*;
 
-
 fn connect_menu_buttons(app: gtk::Application, builder: gtk::Builder) {
     let about_menu_item: gtk::MenuItem = builder.get_object_expect("aboutMenuItem");
     let about_dialog: gtk::AboutDialog = builder.get_object_expect("aboutDialog");
@@ -32,23 +31,30 @@ fn show_msg_in_statusbar(builder: gtk::Builder, msg: &str) {
     statusbar.push(0, msg);
 }
 
+#[derive(Debug)]
+#[repr(i32)]
 enum Columns {
-    Item,
+    Item = 0,
     Recurse,
 }
+
+const COL_INDICIES: [u32; 2] = [Columns::Item as u32, Columns::Recurse as u32];
 
 fn insert_child_into_tree_store(
     tree_store: gtk::TreeStore,
     parent: Option<gtk::TreeIter>,
     child: &Tree<NixQueryEntry>,
-)
-{
+) {
     let Tree { item, children }: &Tree<NixQueryEntry> = child;
     let drv: &NixQueryDrv = &item.0;
     let drv_str = drv.to_string();
-    let recurse_str = if item.1 == Recurse::Yes { "go to first instance" } else { "" };
+    let recurse_str = if item.1 == Recurse::Yes {
+        "go to first instance"
+    } else {
+        ""
+    };
     let this_iter: gtk::TreeIter =
-        tree_store.insert_with_values(parent.as_ref(), None, &[0, 1], &[&drv_str, &recurse_str]);
+        tree_store.insert_with_values(parent.as_ref(), None, &COL_INDICIES, &[&drv_str, &recurse_str]);
     insert_children_into_tree_store(tree_store, this_iter, children);
 }
 
@@ -118,7 +124,7 @@ fn create_item_column(tree_view: gtk::TreeView) {
     let column = gtk::TreeViewColumn::new();
     column.set_title("item");
     column.pack_start(&renderer, false);
-    column.add_attribute(&renderer, "text", 0);
+    column.add_attribute(&renderer, "text", Columns::Item as i32);
 
     tree_view.append_column(&column);
 }
@@ -131,7 +137,7 @@ fn create_link_column(tree_view: gtk::TreeView) {
     let column = gtk::TreeViewColumn::new();
     column.set_title("repeat");
     column.pack_end(&renderer, false);
-    column.add_attribute(&renderer, "text", 1);
+    column.add_attribute(&renderer, "text", Columns::Recurse as i32);
 
     tree_view.append_column(&column);
 }
