@@ -45,7 +45,7 @@ fn insert_child_into_tree_store(
     let Tree { item, children }: &Tree<NixQueryEntry> = child;
     let drv: &NixQueryDrv = &item.0;
     let drv_str = drv.to_string();
-    let recurse_str = if item.1 == Recurse::Yes { "yes" } else { "" };
+    let recurse_str = if item.1 == Recurse::Yes { "go to first instance" } else { "" };
     let this_iter: gtk::TreeIter =
         tree_store.insert_with_values(parent.as_ref(), None, &[0, 1], &[&drv_str, &recurse_str]);
     insert_children_into_tree_store(tree_store, this_iter, children);
@@ -124,6 +124,8 @@ fn create_item_column(tree_view: gtk::TreeView) {
 
 fn create_link_column(tree_view: gtk::TreeView) {
     let renderer = gtk::CellRendererText::new();
+    renderer.set_property_underline(pango::Underline::Single);
+    renderer.set_property_foreground(Some("blue"));
 
     let column = gtk::TreeViewColumn::new();
     column.set_title("repeat");

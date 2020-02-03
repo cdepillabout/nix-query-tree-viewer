@@ -408,6 +408,7 @@ dependencies = [
  "gtk 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "indoc 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 5.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pango 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "structopt 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
