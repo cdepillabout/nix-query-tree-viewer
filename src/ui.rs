@@ -178,7 +178,11 @@ fn setup_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) -> (g
 
     tree_view.connect_row_activated(move |tree_view_ref, tree_path, tree_view_column: &gtk::TreeViewColumn| {
         match &res_clone.res {
-            Err(_) => (),
+            Err(_) => {
+                let column_pos = get_tree_view_column_pos(tree_view_ref.clone(), tree_view_column.clone());
+                let path = gtk_tree_path_to_tree_path(tree_path.clone());
+                format!("column_pos: {:?}, path: {:?}", column_pos, path.clone());
+            },
             Ok(res) => {
                 let column_pos = get_tree_view_column_pos(tree_view_ref.clone(), tree_view_column.clone());
                 let path = gtk_tree_path_to_tree_path(tree_path.clone());
