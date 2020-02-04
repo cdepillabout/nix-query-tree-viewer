@@ -40,11 +40,17 @@ pub struct NixQueryEntry(pub NixQueryDrv, pub Recurse);
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NixQueryTree(pub Tree<NixQueryEntry>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct NixQueryPathMap(pub TreePathMap<NixQueryDrv>);
+fn nix_query_entry_get_drv(nix_query_entry: NixQueryEntry) -> NixQueryDrv {
+    nix_query_entry.0
+}
 
-impl From<&NixQueryTree> for NixQueryPathMap {
-    fn from(other: &NixQueryTree) -> NixQueryPathMap {
-        NixQueryPathMap(other.0.path_map(|nix_query_entry| nix_query_entry.0))
+impl NixQueryTree {
+    fn path_map(&self) -> NixQueryPathMap {
+        let tree: &Tree<NixQueryEntry> = &self.0;
+        let tree_path_map = tree.path_map_map(&nix_query_entry_get_drv);
+        NixQueryPathMap(tree_path_map)
     }
 }
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct NixQueryPathMap(pub TreePathMap<NixQueryDrv>);

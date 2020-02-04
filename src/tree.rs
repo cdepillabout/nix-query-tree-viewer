@@ -26,10 +26,17 @@ impl<T> Tree<T> {
         }
     }
 
-    pub fn path_map<F, U>(&self, f: F) -> TreePathMap<U> where
-        F: Fn(T) -> U,
+}
+
+impl<T> Tree<T> where
+    T: Clone,
+{
+    pub fn append(&mut self, new_child_tree: Tree<T>) {
+        self.children.push(new_child_tree);
+    }
+
+    pub fn path_map_map<U>(&self, f: &dyn Fn(T) -> U) -> TreePathMap<U> where
         U: Eq + Hash,
-        T: Clone,
     {
         let mut map = TreePathMap::new();
         let root_path = Path::new();
@@ -39,12 +46,12 @@ impl<T> Tree<T> {
     }
 }
 
-impl<T> Tree<T>
-where
-    T: Clone,
+impl<T> Tree<T> where
+    T: Clone + Eq + Hash,
 {
-    pub fn append(&mut self, new_child_tree: Tree<T>) {
-        self.children.push(new_child_tree);
+    pub fn path_map(&self) -> TreePathMap<T>
+    {
+        self.path_map_map(&std::convert::identity)
     }
 }
 
@@ -129,8 +136,7 @@ where
 {
     // TODO: How to write insert_children_own and insert_children
     // in one function.  Polymorphism over ownership/references??
-    fn insert_children_map<U, F>(&mut self, children: &[Tree<U>], path: Path, f: F) where
-        F: Fn(U) -> T,
+    fn insert_children_map<U>(&mut self, children: &[Tree<U>], path: Path, f: &dyn Fn(U) -> T) where
         U: Clone,
     {
         for (i, child) in children.iter().enumerate() {
@@ -138,25 +144,6 @@ where
             self.insert(f(child.item.clone()), child_path.clone());
             self.insert_children_map(&child.children, child_path, &f);
         }
-    }
-}
-
-// TODO: Is it possible to combine these two instances?
-impl<T> From<&Tree<T>> for TreePathMap<T>
-where
-    T: Clone + Eq + Hash,
-{
-    fn from(other: &Tree<T>) -> TreePathMap<T> {
-        other.path_map(|t| t)
-    }
-}
-
-impl<T> From<Tree<T>> for TreePathMap<T>
-where
-    T: Clone + Eq + Hash,
-{
-    fn from(other: Tree<T>) -> TreePathMap<T> {
-        other.path_map(|t: T| t)
     }
 }
 
@@ -287,7 +274,7 @@ mod tests {
             ],
         );
 
-        let res_tree_path_map: TreePathMap<String> = tree.into();
+        let res_tree_path_map: TreePathMap<String> = tree.path_map();
 
         let mut actual_tree_path_map: HashMap<String, Vec<Path>> = HashMap::new();
 
@@ -326,7 +313,7 @@ mod tests {
             ],
         );
 
-        let res_tree_path_map: TreePathMap<String> = tree.into();
+        let res_tree_path_map: TreePathMap<String> = tree.path_map();
 
         let mut actual_tree_path_map: HashMap<String, Vec<Path>> = HashMap::new();
 

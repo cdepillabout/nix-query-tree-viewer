@@ -32,7 +32,7 @@ pub struct NixStoreRes {
 
 impl NixStoreRes {
     pub fn new(raw: String, tree: NixQueryTree) -> Self {
-        let map: NixQueryPathMap = (&tree).into();
+        let map: NixQueryPathMap = tree.path_map();
         NixStoreRes { raw, tree, map }
     }
 }
