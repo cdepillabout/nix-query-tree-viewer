@@ -54,3 +54,9 @@ impl NixQueryTree {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NixQueryPathMap(pub TreePathMap<NixQueryDrv>);
+
+impl NixQueryPathMap {
+    pub fn lookup_first(&self, k: &NixQueryDrv) -> Option<&Path> {
+        self.0.lookup_first(k)
+    }
+}

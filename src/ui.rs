@@ -159,7 +159,24 @@ fn get_tree_view_column_pos(tree_view: gtk::TreeView, tree_view_column: gtk::Tre
 }
 
 fn gtk_tree_path_to_tree_path(gtk_tree_path: gtk::TreePath) -> tree::Path {
-    tree::Path(gtk_tree_path.get_indices().iter().map(|i| *i as usize).collect::<VecDeque<usize>>())
+    tree::Path(
+        gtk_tree_path
+            .get_indices()
+            .iter()
+            .map(|i| *i as usize)
+            // our tree::Path will only ever have one item at the root, so we can drop the first
+            // item from the gtk::TreePath.
+            .skip(1)
+            .collect::<VecDeque<usize>>()
+    )
+}
+
+fn tree_path_to_gtk_tree_path(path: &tree::Path) -> gtk::TreePath {
+    let mut vec_indices: Vec<i32> = path.0.iter().map(|&u| u as i32).collect();
+    vec_indices.insert(0, 0);
+    println!("tree_path_to_gtk_tree_path, path: {:?}, vec_indices: {:?}", path, vec_indices);
+    let gtk_tree_path = gtk::TreePath::new_from_indicesv(&vec_indices);
+    gtk_tree_path
 }
 
 // fn nix_query_entry_from_gtk_tree_path(
@@ -176,12 +193,13 @@ fn setup_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) -> (g
     // TODO: It is kinda ugly that I have to clone this...
     let res_clone = nix_store_res.clone();
 
+    // TODO: Pull this out into a separate function.
     tree_view.connect_row_activated(move |tree_view_ref, tree_path, tree_view_column: &gtk::TreeViewColumn| {
         match &res_clone.res {
             Err(_) => {
                 let column_pos = get_tree_view_column_pos(tree_view_ref.clone(), tree_view_column.clone());
                 let path = gtk_tree_path_to_tree_path(tree_path.clone());
-                format!("column_pos: {:?}, path: {:?}", column_pos, path.clone());
+                println!("column_pos: {:?}, path: {:?}", column_pos, path.clone());
             },
             Ok(res) => {
                 let column_pos = get_tree_view_column_pos(tree_view_ref.clone(), tree_view_column.clone());
@@ -189,13 +207,29 @@ fn setup_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) -> (g
                 let nix_query_tree = &res.tree;
                 let option_nix_query_entry = nix_query_tree.lookup(path.clone());
 
-                format!("column_pos: {:?}, path: {:?}, option_nix_query_entry: {:?}", column_pos, path.clone(), option_nix_query_entry);
+                println!("column_pos: {:?}, path: {:?}, option_nix_query_entry: {:?}", column_pos, path.clone(), option_nix_query_entry);
 
                 // stupid rust
-                // match column_pos == Column::Recurse as usize, option_nix_query_entry) let Some(nix_query_entry) =  option_nix_query_entry {
                 match (column_pos == Column::Recurse as usize, option_nix_query_entry) {
                     (true, Some(nix_query_entry)) if nix_query_entry.1 == Recurse::Yes => {
-                        println!("hello");
+                        let option_first_path = res.map.lookup_first(&nix_query_entry.0);
+                        match option_first_path {
+                            None => panic!("Nothing in our map for this drv.  This should hever happen."),
+                            Some(first_path) => {
+                                let first_gtk_path = tree_path_to_gtk_tree_path(first_path);
+                                let col = tree_view_ref.get_column(Column::Item as i32);
+
+                                // Open recursively upward from this new path.
+                                tree_view_ref.expand_to_path(&first_gtk_path);
+
+                                // Scroll to the newly opened path.
+                                tree_view_ref.scroll_to_cell(Some(&first_gtk_path), col.as_ref(), true, 0.5, 0.5);
+
+                                let tree_selection: gtk::TreeSelection = tree_view_ref.get_selection();
+                                // Select the newly opened path.
+                                tree_selection.select_path(&first_gtk_path);
+                            }
+                        }
                     }
                     _ => {
                         toggle_row(tree_view_ref.clone(), tree_path.clone(), false);
