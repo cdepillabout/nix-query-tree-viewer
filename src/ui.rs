@@ -191,6 +191,7 @@ fn setup_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) -> (g
     create_columns(tree_view.clone());
 
     // TODO: It is kinda ugly that I have to clone this...
+    // Maybe this is one of those things I can use Rc for???
     let res_clone = nix_store_res.clone();
 
     // TODO: Pull this out into a separate function.
