@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use super::NixQueryTree;
+use super::{NixQueryPathMap, NixQueryTree};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum NixStoreErr {
@@ -27,11 +27,13 @@ impl std::fmt::Display for NixStoreErr {
 pub struct NixStoreRes {
     pub raw: String,
     pub tree: NixQueryTree,
+    pub map: NixQueryPathMap,
 }
 
 impl NixStoreRes {
     pub fn new(raw: String, tree: NixQueryTree) -> Self {
-        NixStoreRes { raw, tree }
+        let map: NixQueryPathMap = (&tree).into();
+        NixStoreRes { raw, tree, map }
     }
 }
 

@@ -1,7 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 use std::hash::Hash;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Tree<T> {
     pub item: T,
     pub children: Vec<Tree<T>>,
@@ -25,6 +25,18 @@ impl<T> Tree<T> {
             },
         }
     }
+
+    pub fn path_map<F, U>(&self, f: F) -> TreePathMap<U> where
+        F: Fn(T) -> U,
+        U: Eq + Hash,
+        T: Clone,
+    {
+        let mut map = TreePathMap::new();
+        let root_path = Path::new();
+        map.insert(f(self.item.clone()), root_path.clone());
+        map.insert_children_map(&self.children, root_path, &f);
+        map
+    }
 }
 
 impl<T> Tree<T>
@@ -36,7 +48,7 @@ where
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Path(pub VecDeque<usize>);
 
 impl Path {
@@ -66,7 +78,7 @@ impl From<Vec<usize>> for Path {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TreePathMap<T>(HashMap<T, Vec<Path>>)
 where
     T: Eq + Hash;
@@ -85,18 +97,19 @@ impl<T> TreePathMap<T> where
             .or_insert(vec![path]);
     }
 
-    fn insert_children_own(&mut self, children: Vec<Tree<T>>, path: Path) {
-        for (i, child) in children.into_iter().enumerate() {
-            let child_path = path.push_back(i);
-            self.insert(child.item, child_path.clone());
-            self.insert_children_own(child.children, child_path);
-        }
-    }
+    // fn insert_children_own(&mut self, children: Vec<Tree<T>>, path: Path) {
+    //     for (i, child) in children.into_iter().enumerate() {
+    //         let child_path = path.push_back(i);
+    //         self.insert(child.item, child_path.clone());
+    //         self.insert_children_own(child.children, child_path);
+    //     }
+    // }
 
     pub fn lookup_first(&self, k: &T) -> Option<&Path> {
         let option_paths: Option<&Vec<Path>> = self.0.get(k);
         option_paths.and_then(|vec: &Vec<Path>| vec.first())
     }
+
 }
 
 impl<T> TreePathMap<T>
@@ -105,38 +118,45 @@ where
 {
     // TODO: How to write insert_children_own and insert_children
     // in one function.  Polymorphism over ownership/references??
-    fn insert_children(&mut self, children: &[Tree<T>], path: Path) {
+    // fn insert_children(&mut self, children: &[Tree<T>], path: Path) {
+    //     self.insert_children_map(children, path, |t| t)
+    // }
+}
+
+impl<T> TreePathMap<T>
+where
+    T: Eq + Hash,
+{
+    // TODO: How to write insert_children_own and insert_children
+    // in one function.  Polymorphism over ownership/references??
+    fn insert_children_map<U, F>(&mut self, children: &[Tree<U>], path: Path, f: F) where
+        F: Fn(U) -> T,
+        U: Clone,
+    {
         for (i, child) in children.iter().enumerate() {
             let child_path = path.push_back(i);
-            self.insert(child.item.clone(), child_path.clone());
-            self.insert_children(&child.children, child_path);
+            self.insert(f(child.item.clone()), child_path.clone());
+            self.insert_children_map(&child.children, child_path, &f);
         }
     }
 }
 
+// TODO: Is it possible to combine these two instances?
 impl<T> From<&Tree<T>> for TreePathMap<T>
 where
     T: Clone + Eq + Hash,
 {
     fn from(other: &Tree<T>) -> TreePathMap<T> {
-        let mut map = TreePathMap::new();
-        let root_path = Path::new();
-        map.insert(other.item.clone(), root_path.clone());
-        map.insert_children(&other.children, root_path);
-        map
+        other.path_map(|t| t)
     }
 }
 
 impl<T> From<Tree<T>> for TreePathMap<T>
 where
-    T: Eq + Hash,
+    T: Clone + Eq + Hash,
 {
     fn from(other: Tree<T>) -> TreePathMap<T> {
-        let mut map = TreePathMap::new();
-        let root_path = Path::new();
-        map.insert(other.item, root_path.clone());
-        map.insert_children_own(other.children, root_path);
-        map
+        other.path_map(|t: T| t)
     }
 }
 
