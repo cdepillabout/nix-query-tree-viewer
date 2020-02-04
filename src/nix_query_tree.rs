@@ -1,7 +1,7 @@
 pub mod parsing;
 pub mod exec_nix_store;
 
-use super::tree::{Tree, TreePathMap};
+use super::tree::{Path, Tree, TreePathMap};
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -40,15 +40,15 @@ pub struct NixQueryEntry(pub NixQueryDrv, pub Recurse);
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NixQueryTree(pub Tree<NixQueryEntry>);
 
-fn nix_query_entry_get_drv(nix_query_entry: NixQueryEntry) -> NixQueryDrv {
-    nix_query_entry.0
-}
-
 impl NixQueryTree {
     fn path_map(&self) -> NixQueryPathMap {
         let tree: &Tree<NixQueryEntry> = &self.0;
-        let tree_path_map = tree.path_map_map(&nix_query_entry_get_drv);
+        let tree_path_map = tree.path_map_map(&|nix_query_entry| nix_query_entry.0);
         NixQueryPathMap(tree_path_map)
+    }
+
+    pub fn lookup(&self, path: Path) -> Option<&NixQueryEntry> {
+        self.0.lookup(path)
     }
 }
 

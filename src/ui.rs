@@ -4,10 +4,12 @@ use gdk::prelude::*;
 use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
+use std::collections::VecDeque;
 use std::path::Path;
 
 use super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreErr, NixStoreRes};
 use super::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse};
+use super::tree;
 use super::tree::Tree;
 use builder::*;
 
@@ -33,12 +35,12 @@ fn show_msg_in_statusbar(builder: gtk::Builder, msg: &str) {
 
 #[derive(Debug)]
 #[repr(i32)]
-enum Columns {
+enum Column {
     Item = 0,
     Recurse,
 }
 
-const COL_INDICIES: [u32; 2] = [Columns::Item as u32, Columns::Recurse as u32];
+const COL_INDICIES: [u32; 2] = [Column::Item as u32, Column::Recurse as u32];
 
 fn insert_child_into_tree_store(
     tree_store: gtk::TreeStore,
@@ -124,7 +126,7 @@ fn create_item_column(tree_view: gtk::TreeView) {
     let column = gtk::TreeViewColumn::new();
     column.set_title("item");
     column.pack_start(&renderer, false);
-    column.add_attribute(&renderer, "text", Columns::Item as i32);
+    column.add_attribute(&renderer, "text", Column::Item as i32);
 
     tree_view.append_column(&column);
 }
@@ -137,7 +139,7 @@ fn create_link_column(tree_view: gtk::TreeView) {
     let column = gtk::TreeViewColumn::new();
     column.set_title("repeat");
     column.pack_end(&renderer, false);
-    column.add_attribute(&renderer, "text", Columns::Recurse as i32);
+    column.add_attribute(&renderer, "text", Column::Recurse as i32);
 
     tree_view.append_column(&column);
 }
@@ -147,7 +149,22 @@ fn create_columns(tree_view: gtk::TreeView) {
     create_link_column(tree_view);
 }
 
-fn setup_tree_view(builder: gtk::Builder) -> (gtk::TreeStore, gtk::TreeView) {
+fn get_tree_view_column_pos(tree_view: gtk::TreeView, tree_view_column: gtk::TreeViewColumn) -> usize {
+    let all_tree_view_columns = tree_view.get_columns();
+    let option_pos = all_tree_view_columns.iter().position(|col| *col == tree_view_column);
+    match option_pos {
+        None => panic!("No column matching id.  This should never happen."),
+        Some(pos) => pos,
+    }
+}
+
+fn gtk_tree_path_to_tree_path(gtk_tree_path: gtk::TreePath) -> tree::Path {
+    tree::Path(gtk_tree_path.get_indices().iter().map(|i| *i as usize).collect::<VecDeque<usize>>())
+}
+
+// fn nix_query_entry_from_gtk_tree_path(
+
+fn setup_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) -> (gtk::TreeStore, gtk::TreeView) {
     let tree_view: gtk::TreeView = builder.get_object_expect("treeView");
     let tree_store: gtk::TreeStore =
         gtk::TreeStore::new(&[glib::types::Type::String, glib::types::Type::String]);
@@ -156,8 +173,32 @@ fn setup_tree_view(builder: gtk::Builder) -> (gtk::TreeStore, gtk::TreeView) {
 
     create_columns(tree_view.clone());
 
-    tree_view.connect_row_activated(|tree_view_ref, tree_path, _tree_view_column| {
-        toggle_row(tree_view_ref.clone(), tree_path.clone(), false);
+    // TODO: It is kinda ugly that I have to clone this...
+    let res_clone = nix_store_res.clone();
+
+    tree_view.connect_row_activated(move |tree_view_ref, tree_path, tree_view_column: &gtk::TreeViewColumn| {
+        match &res_clone.res {
+            Err(_) => (),
+            Ok(res) => {
+                let column_pos = get_tree_view_column_pos(tree_view_ref.clone(), tree_view_column.clone());
+                let path = gtk_tree_path_to_tree_path(tree_path.clone());
+                let nix_query_tree = &res.tree;
+                let option_nix_query_entry = nix_query_tree.lookup(path.clone());
+
+                format!("column_pos: {:?}, path: {:?}, option_nix_query_entry: {:?}", column_pos, path.clone(), option_nix_query_entry);
+
+                // stupid rust
+                // match column_pos == Column::Recurse as usize, option_nix_query_entry) let Some(nix_query_entry) =  option_nix_query_entry {
+                match (column_pos == Column::Recurse as usize, option_nix_query_entry) {
+                    (true, Some(nix_query_entry)) if nix_query_entry.1 == Recurse::Yes => {
+                        println!("hello");
+                    }
+                    _ => {
+                        toggle_row(tree_view_ref.clone(), tree_path.clone(), false);
+                    }
+                }
+            }
+        }
     });
 
     (tree_store, tree_view)
@@ -193,7 +234,7 @@ fn app_activate(nix_store_res: ExecNixStoreRes, app: gtk::Application) {
 
     setup_css(window.clone().upcast());
 
-    let (tree_store, tree_view) = setup_tree_view(builder.clone());
+    let (tree_store, tree_view) = setup_tree_view(builder.clone(), &nix_store_res);
 
     render_nix_store_res(builder.clone(), tree_store, &nix_store_res);
 

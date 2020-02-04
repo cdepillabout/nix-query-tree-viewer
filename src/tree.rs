@@ -41,7 +41,7 @@ impl<T> Tree<T> where
         let mut map = TreePathMap::new();
         let root_path = Path::new();
         map.insert(f(self.item.clone()), root_path.clone());
-        map.insert_children_map(&self.children, root_path, &f);
+        map.insert_children_map(&self.children, root_path, f);
         map
     }
 }
@@ -142,7 +142,7 @@ where
         for (i, child) in children.iter().enumerate() {
             let child_path = path.push_back(i);
             self.insert(f(child.item.clone()), child_path.clone());
-            self.insert_children_map(&child.children, child_path, &f);
+            self.insert_children_map(&child.children, child_path, f);
         }
     }
 }
