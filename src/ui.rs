@@ -56,7 +56,6 @@ impl TryFrom<usize> for Column {
     }
 }
 
-
 fn insert_child_into_tree_store(
     tree_store: gtk::TreeStore,
     parent: Option<gtk::TreeIter>,
@@ -210,44 +209,52 @@ fn tree_view_go_to_path(tree_view: gtk::TreeView, first_path: &tree::Path) {
     tree_view.expand_to_path(&first_gtk_path);
 
     // Scroll to the newly opened path.
-    tree_view.scroll_to_cell(
-        Some(&first_gtk_path),
-        col.as_ref(),
-        true,
-        0.5,
-        0.5,
-    );
+    tree_view.scroll_to_cell(Some(&first_gtk_path), col.as_ref(), true, 0.5, 0.5);
 
     let tree_selection: gtk::TreeSelection = tree_view.get_selection();
     // Select the newly opened path.
     tree_selection.select_path(&first_gtk_path);
 }
 
-fn nix_query_tree_lookup_gtk_path(nix_query_tree: &NixQueryTree, tree_path: gtk::TreePath) -> Option<&NixQueryEntry> {
+fn nix_query_tree_lookup_gtk_path(
+    nix_query_tree: &NixQueryTree,
+    tree_path: gtk::TreePath,
+) -> Option<&NixQueryEntry> {
     let path = gtk_tree_path_to_tree_path(tree_path.clone());
     nix_query_tree.lookup(path.clone())
 }
 
-fn gtk_tree_view_column_to_column(tree_view: gtk::TreeView, tree_view_column: gtk::TreeViewColumn) -> Option<Column> {
+fn gtk_tree_view_column_to_column(
+    tree_view: gtk::TreeView,
+    tree_view_column: gtk::TreeViewColumn,
+) -> Option<Column> {
     let column_pos: usize = get_tree_view_column_pos(tree_view.clone(), tree_view_column.clone());
     Column::try_from(column_pos).ok()
 }
 
-fn nix_store_res_lookup_gtk_path(nix_store_res: &NixStoreRes, tree_path: gtk::TreePath) -> Option<&NixQueryEntry> {
+fn nix_store_res_lookup_gtk_path(
+    nix_store_res: &NixStoreRes,
+    tree_path: gtk::TreePath,
+) -> Option<&NixQueryEntry> {
     nix_query_tree_lookup_gtk_path(&nix_store_res.tree, tree_path)
 }
 
-fn nix_store_res_lookup_first_query_entry<'a, 'b>(nix_store_res: &'a NixStoreRes, nix_query_entry: &'b NixQueryEntry) -> Option<&'a tree::Path> {
+fn nix_store_res_lookup_first_query_entry<'a, 'b>(
+    nix_store_res: &'a NixStoreRes,
+    nix_query_entry: &'b NixQueryEntry,
+) -> Option<&'a tree::Path> {
     nix_store_res.map.lookup_first(&nix_query_entry.0)
 }
 
 // This function assumes that nix_query_entry actually exists in NixStoreRes
-fn gtk_tree_view_go_to_path_for_query_entry (tree_view: gtk::TreeView, res: &NixStoreRes, nix_query_entry: &NixQueryEntry) {
+fn gtk_tree_view_go_to_path_for_query_entry(
+    tree_view: gtk::TreeView,
+    res: &NixStoreRes,
+    nix_query_entry: &NixQueryEntry,
+) {
     let option_first_path = nix_store_res_lookup_first_query_entry(&res, &nix_query_entry);
     match option_first_path {
-        None => {
-            panic!("Nothing in our map for this drv.  This should hever happen.")
-        }
+        None => panic!("Nothing in our map for this drv.  This should hever happen."),
         Some(first_path) => {
             tree_view_go_to_path(tree_view, first_path);
         }
@@ -266,12 +273,14 @@ fn tree_view_row_activated(
             return;
         }
         Ok(res) => {
-            let option_column = gtk_tree_view_column_to_column(tree_view.clone(), tree_view_column.clone());
-            let option_nix_query_entry = nix_store_res_lookup_gtk_path(&res, tree_path.clone());
+            let option_column =
+                gtk_tree_view_column_to_column(tree_view.clone(), tree_view_column.clone());
+            let option_nix_query_entry_is_recurse =
+                nix_store_res_lookup_gtk_path(&res, tree_path.clone())
+                    .filter(|nix_query_entry| nix_query_entry.1 == Recurse::Yes);
 
-            // stupid rust
-            match (option_column, option_nix_query_entry) {
-                (Some(Column::Recurse), Some(nix_query_entry)) if nix_query_entry.1 == Recurse::Yes => {
+            match (option_column, option_nix_query_entry_is_recurse) {
+                (Some(Column::Recurse), Some(nix_query_entry)) => {
                     gtk_tree_view_go_to_path_for_query_entry(tree_view, &res, &nix_query_entry);
                 }
                 _ => {
@@ -318,9 +327,10 @@ fn setup_tree_view(
             let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this...");
             menu.append(&search_for_this_menu_item);
 
-
             let (x, y) = event_button.get_position();
-            if let Some((Some(tree_path), Some(tree_view_column), _, _)) = tree_view_ref.get_path_at_pos(x as i32, y as i32) {
+            if let Some((Some(tree_path), Some(tree_view_column), _, _)) =
+                tree_view_ref.get_path_at_pos(x as i32, y as i32)
+            {
                 println!("got some...");
             }
 
