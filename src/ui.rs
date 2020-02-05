@@ -302,8 +302,6 @@ fn tree_view_button_press_event(
     event_button: gdk::EventButton,
     nix_store_res: &NixStoreRes,
 ) -> Inhibit {
-    println!("In button press event!!!");
-
     if event_button.get_event_type() == gdk::EventType::ButtonPress
         && event_button.get_button() == 3
     {
@@ -315,17 +313,24 @@ fn tree_view_button_press_event(
         if let Some((Some(tree_path), Some(tree_view_column), _, _)) =
             tree_view.get_path_at_pos(x as i32, y as i32)
         {
-            println!("got some...");
-            match gtk_tree_path_is_for_recurse_column(tree_view.clone(), tree_view_column, tree_path, nix_store_res) {
-                Some(nix_query_entry) => {
-                    let go_to_first_instance_menu_item = gtk::MenuItem::new_with_label("Go to first instance");
-                    // TODO: Shouldn't need to clone this nix_store_res...
-                    go_to_first_instance_menu_item.connect_activate(clone!(@strong nix_store_res, @strong nix_query_entry, @weak tree_view => move |_|
-                        gtk_tree_view_go_to_path_for_query_entry(tree_view, &nix_store_res, &nix_query_entry)
-                    ));
-                    menu.append(&go_to_first_instance_menu_item);
-                }
-                None => (),
+            if let Some(nix_query_entry) = gtk_tree_path_is_for_recurse_column(
+                tree_view.clone(),
+                tree_view_column,
+                tree_path,
+                nix_store_res,
+            ) {
+                let go_to_first_instance_menu_item =
+                    gtk::MenuItem::new_with_label("Go to first instance");
+
+                // TODO: Shouldn't need to clone this nix_store_res...
+                go_to_first_instance_menu_item.connect_activate(
+                    clone!(@strong nix_store_res, @strong nix_query_entry, @weak tree_view =>
+                        move |_|
+                            gtk_tree_view_go_to_path_for_query_entry(tree_view, &nix_store_res, &nix_query_entry)
+                    )
+                );
+
+                menu.append(&go_to_first_instance_menu_item);
             }
         }
 
@@ -337,14 +342,10 @@ fn tree_view_button_press_event(
     Inhibit(false)
 }
 
-fn connect_tree_signals(
-    tree_view: gtk::TreeView,
-    exec_nix_store_res: &ExecNixStoreRes,
-) {
+fn connect_tree_signals(tree_view: gtk::TreeView, exec_nix_store_res: &ExecNixStoreRes) {
     // Only connect signals to the tree when we successfully ran
     // nix-store.
     if let Ok(nix_store_res) = &exec_nix_store_res.res {
-
         // TODO: It is kinda ugly that I have to clone this...
         // Maybe this is one of those things I can use Rc for???
         let nix_store_res_clone: NixStoreRes = nix_store_res.clone();
