@@ -308,7 +308,7 @@ fn tree_view_button_press_event(
         && event_button.get_button() == 3
     {
         let menu: gtk::Menu = gtk::Menu::new();
-        let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this...");
+        let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this");
         menu.append(&search_for_this_menu_item);
 
         let (x, y) = event_button.get_position();
@@ -318,13 +318,18 @@ fn tree_view_button_press_event(
             println!("got some...");
             match gtk_tree_path_is_for_recurse_column(tree_view.clone(), tree_view_column, tree_path, nix_store_res) {
                 Some(nix_query_entry) => {
-                    println!("yo this is the right click!");
+                    let go_to_first_instance_menu_item = gtk::MenuItem::new_with_label("Go to first instance");
+                    // TODO: Shouldn't need to clone this nix_store_res...
+                    go_to_first_instance_menu_item.connect_activate(clone!(@strong nix_store_res, @strong nix_query_entry, @weak tree_view => move |_|
+                        gtk_tree_view_go_to_path_for_query_entry(tree_view, &nix_store_res, &nix_query_entry)
+                    ));
+                    menu.append(&go_to_first_instance_menu_item);
                 }
                 None => (),
             }
         }
 
-        menu.set_property_attach_widget(Some(&tree_view));
+        menu.set_property_attach_widget(Some(&tree_view.clone()));
         menu.show_all();
         menu.popup_at_pointer(Some(&event_button));
     }
@@ -338,7 +343,7 @@ fn connect_tree_signals(
 ) {
     // Only connect signals to the tree when we successfully ran
     // nix-store.
-    if let Ok(nix_store_res) = exec_nix_store_res.res.clone() {
+    if let Ok(nix_store_res) = &exec_nix_store_res.res {
 
         // TODO: It is kinda ugly that I have to clone this...
         // Maybe this is one of those things I can use Rc for???
