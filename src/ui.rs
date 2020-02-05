@@ -41,6 +41,7 @@ enum Column {
     Recurse,
 }
 
+// Is there some way to derive these types of things?
 const ALL_COLS: [Column; 2] = [Column::Item, Column::Recurse];
 const COL_INDICIES: [usize; 2] = [Column::Item as usize, Column::Recurse as usize];
 
