@@ -410,7 +410,18 @@ fn setup_css(window: gtk::Window) {
     }
 }
 
-fn app_activate(nix_store_res: ExecNixStoreRes, app: gtk::Application) {
+fn setup_raw_text_view(builder: gtk::Builder, exec_nix_store_res: &ExecNixStoreRes) {
+    let text_buffer: gtk::TextBuffer = builder.get_object_expect("rawTextBuffer");
+
+    let text: String = match &exec_nix_store_res.res {
+        Err(nix_store_err) => nix_store_err.to_string(),
+        Ok(nix_store_res) => nix_store_res.raw.clone(),
+    };
+
+    text_buffer.set_text(&text);
+}
+
+fn app_activate(exec_nix_store_res: ExecNixStoreRes, app: gtk::Application) {
     let builder = create_builder();
 
     let window: gtk::ApplicationWindow = builder.get_object_expect("appWindow");
@@ -418,12 +429,14 @@ fn app_activate(nix_store_res: ExecNixStoreRes, app: gtk::Application) {
 
     setup_css(window.clone().upcast());
 
-    let (tree_store, tree_view) = setup_tree_view(builder.clone(), &nix_store_res);
+    let (tree_store, tree_view) = setup_tree_view(builder.clone(), &exec_nix_store_res);
 
-    render_nix_store_res(builder.clone(), tree_store, &nix_store_res);
+    render_nix_store_res(builder.clone(), tree_store, &exec_nix_store_res);
 
     // expand the first row of the tree view
     tree_view.expand_row(&gtk::TreePath::new_first(), false);
+
+    setup_raw_text_view(builder.clone(), &exec_nix_store_res);
 
     connect_menu_buttons(app, builder);
 
