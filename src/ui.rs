@@ -238,6 +238,23 @@ fn setup_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) -> (g
         tree_view_row_activated(tree_view_ref.clone(), tree_path.clone(), tree_view_column.clone(), res_clone.clone());
     });
 
+    // treeView.button_press_event.connect ((event) => {
+    // if (event.type == EventType.BUTTON_PRESS && event.button == 3) {
+    //     Gtk.Menu menu = new Gtk.Menu ();
+    //     Gtk.MenuItem menu_item = new Gtk.MenuItem.with_label ("Add file");
+    //     menu.attach_to_widget (treeView, null);
+    //     menu.add (menu_item);
+    //     menu.show_all ();
+    //     menu.popup (null, null, null, event.button, event.time);
+    // }
+    // });
+
+    tree_view.connect_button_press_event(|tree_view_ref, event_button| {
+        println!("In button press event!!!");
+
+        Inhibit(false)
+    });
+
     (tree_store, tree_view)
 }
 
