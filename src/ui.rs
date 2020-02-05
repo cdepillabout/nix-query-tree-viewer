@@ -278,36 +278,95 @@ fn gtk_tree_view_go_to_path_for_query_entry(
     }
 }
 
-// TODO: Refactor
 fn tree_view_row_activated(
     tree_view: gtk::TreeView,
     tree_path: gtk::TreePath,
     tree_view_column: gtk::TreeViewColumn,
-    exec_nix_store_res: ExecNixStoreRes,
+    nix_store_res: &NixStoreRes,
 ) {
-    match exec_nix_store_res.res {
-        Err(_) => {
-            return;
+    match gtk_tree_path_is_for_recurse_column(
+        tree_view.clone(),
+        tree_view_column.clone(),
+        tree_path.clone(),
+        nix_store_res,
+    ) {
+        Some(nix_query_entry) => {
+            gtk_tree_view_go_to_path_for_query_entry(tree_view, nix_store_res, &nix_query_entry)
         }
-        Ok(res) => {
-            match gtk_tree_path_is_for_recurse_column(
-                tree_view.clone(),
-                tree_view_column.clone(),
-                tree_path.clone(),
-                &res,
-            ) {
+        _ => toggle_row(tree_view.clone(), tree_path.clone(), false),
+    }
+}
+
+fn tree_view_button_press_event(
+    tree_view: gtk::TreeView,
+    event_button: gdk::EventButton,
+    nix_store_res: &NixStoreRes,
+) -> Inhibit {
+    println!("In button press event!!!");
+
+    if event_button.get_event_type() == gdk::EventType::ButtonPress
+        && event_button.get_button() == 3
+    {
+        let menu: gtk::Menu = gtk::Menu::new();
+        let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this...");
+        menu.append(&search_for_this_menu_item);
+
+        let (x, y) = event_button.get_position();
+        if let Some((Some(tree_path), Some(tree_view_column), _, _)) =
+            tree_view.get_path_at_pos(x as i32, y as i32)
+        {
+            println!("got some...");
+            match gtk_tree_path_is_for_recurse_column(tree_view.clone(), tree_view_column, tree_path, nix_store_res) {
                 Some(nix_query_entry) => {
-                    gtk_tree_view_go_to_path_for_query_entry(tree_view, &res, &nix_query_entry)
+                    println!("yo this is the right click!");
                 }
-                _ => toggle_row(tree_view.clone(), tree_path.clone(), false),
+                None => (),
             }
         }
+
+        menu.set_property_attach_widget(Some(&tree_view));
+        menu.show_all();
+        menu.popup_at_pointer(Some(&event_button));
+    }
+
+    Inhibit(false)
+}
+
+fn connect_tree_signals(
+    tree_view: gtk::TreeView,
+    exec_nix_store_res: &ExecNixStoreRes,
+) {
+    // Only connect signals to the tree when we successfully ran
+    // nix-store.
+    if let Ok(nix_store_res) = exec_nix_store_res.res.clone() {
+
+        // TODO: It is kinda ugly that I have to clone this...
+        // Maybe this is one of those things I can use Rc for???
+        let nix_store_res_clone: NixStoreRes = nix_store_res.clone();
+        tree_view.connect_row_activated(move |tree_view_ref, tree_path, tree_view_column| {
+            tree_view_row_activated(
+                tree_view_ref.clone(),
+                tree_path.clone(),
+                tree_view_column.clone(),
+                &nix_store_res_clone,
+            );
+        });
+
+        // TODO: ugly
+        let nix_store_res_clone: NixStoreRes = nix_store_res.clone();
+        tree_view.connect_button_press_event(move |tree_view_ref, event_button| {
+            tree_view_button_press_event(
+                tree_view_ref.clone(),
+                event_button.clone(),
+                &nix_store_res_clone,
+            )
+        });
     }
 }
 
 fn setup_tree_view(
     builder: gtk::Builder,
-    nix_store_res: &ExecNixStoreRes,
+    exec_nix_store_res: &ExecNixStoreRes,
 ) -> (gtk::TreeStore, gtk::TreeView) {
     let tree_view: gtk::TreeView = builder.get_object_expect("treeView");
     let tree_store: gtk::TreeStore =
@@ -317,44 +376,7 @@ fn setup_tree_view(
 
     create_columns(tree_view.clone());
 
-    // TODO: It is kinda ugly that I have to clone this twice (well, really at all)...
-    // Maybe this is one of those things I can use Rc for???
-    let res_clone: ExecNixStoreRes = nix_store_res.clone();
-
-    // TODO: Pull this out into a separate function.
-    tree_view.connect_row_activated(move |tree_view_ref, tree_path, tree_view_column| {
-        tree_view_row_activated(
-            tree_view_ref.clone(),
-            tree_path.clone(),
-            tree_view_column.clone(),
-            res_clone.clone(),
-        );
-    });
-
-    tree_view.connect_button_press_event(|tree_view_ref, event_button| {
-        println!("In button press event!!!");
-
-        if event_button.get_event_type() == gdk::EventType::ButtonPress
-            && event_button.get_button() == 3
-        {
-            let menu: gtk::Menu = gtk::Menu::new();
-            let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this...");
-            menu.append(&search_for_this_menu_item);
-
-            let (x, y) = event_button.get_position();
-            if let Some((Some(tree_path), Some(tree_view_column), _, _)) =
-                tree_view_ref.get_path_at_pos(x as i32, y as i32)
-            {
-                println!("got some...");
-            }
-
-            menu.set_property_attach_widget(Some(tree_view_ref));
-            menu.show_all();
-            menu.popup_at_pointer(Some(event_button));
-        }
-
-        Inhibit(false)
-    });
+    connect_tree_signals(tree_view.clone(), exec_nix_store_res);
 
     (tree_store, tree_view)
 }
