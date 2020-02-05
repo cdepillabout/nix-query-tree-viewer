@@ -271,24 +271,22 @@ fn setup_tree_view(
         );
     });
 
-    tree_view.connect_button_press_event(
-        |tree_view_ref, event_button| {
-            println!("In button press event!!!");
+    tree_view.connect_button_press_event(|tree_view_ref, event_button| {
+        println!("In button press event!!!");
 
-            if event_button.get_event_type() == gdk::EventType::ButtonPress
-                && event_button.get_button() == 3
-            {
-                let menu: gtk::Menu = gtk::Menu::new();
-                let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this...");
-                menu.append(&search_for_this_menu_item);
-                menu.set_property_attach_widget(Some(tree_view_ref));
-                menu.show_all();
-                menu.popup_at_pointer(Some(event_button));
-            }
-
-            Inhibit(false)
+        if event_button.get_event_type() == gdk::EventType::ButtonPress
+            && event_button.get_button() == 3
+        {
+            let menu: gtk::Menu = gtk::Menu::new();
+            let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this...");
+            menu.append(&search_for_this_menu_item);
+            menu.set_property_attach_widget(Some(tree_view_ref));
+            menu.show_all();
+            menu.popup_at_pointer(Some(event_button));
         }
-    );
+
+        Inhibit(false)
+    });
 
     (tree_store, tree_view)
 }
