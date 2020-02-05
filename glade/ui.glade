@@ -179,8 +179,4 @@
       </object>
     </child>
   </object>
-  <object class="GtkMenu" id="treeViewRightClickContextMenu">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-  </object>
 </interface>

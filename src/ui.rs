@@ -55,8 +55,12 @@ fn insert_child_into_tree_store(
     } else {
         ""
     };
-    let this_iter: gtk::TreeIter =
-        tree_store.insert_with_values(parent.as_ref(), None, &COL_INDICIES, &[&drv_str, &recurse_str]);
+    let this_iter: gtk::TreeIter = tree_store.insert_with_values(
+        parent.as_ref(),
+        None,
+        &COL_INDICIES,
+        &[&drv_str, &recurse_str],
+    );
     insert_children_into_tree_store(tree_store, this_iter, children);
 }
 
@@ -149,9 +153,14 @@ fn create_columns(tree_view: gtk::TreeView) {
     create_link_column(tree_view);
 }
 
-fn get_tree_view_column_pos(tree_view: gtk::TreeView, tree_view_column: gtk::TreeViewColumn) -> usize {
+fn get_tree_view_column_pos(
+    tree_view: gtk::TreeView,
+    tree_view_column: gtk::TreeViewColumn,
+) -> usize {
     let all_tree_view_columns = tree_view.get_columns();
-    let option_pos = all_tree_view_columns.iter().position(|col| *col == tree_view_column);
+    let option_pos = all_tree_view_columns
+        .iter()
+        .position(|col| *col == tree_view_column);
     match option_pos {
         None => panic!("No column matching id.  This should never happen."),
         Some(pos) => pos,
@@ -167,7 +176,7 @@ fn gtk_tree_path_to_tree_path(gtk_tree_path: gtk::TreePath) -> tree::Path {
             // our tree::Path will only ever have one item at the root, so we can drop the first
             // item from the gtk::TreePath.
             .skip(1)
-            .collect::<VecDeque<usize>>()
+            .collect::<VecDeque<usize>>(),
     )
 }
 
@@ -179,11 +188,16 @@ fn tree_path_to_gtk_tree_path(path: &tree::Path) -> gtk::TreePath {
 }
 
 // TODO: Refactor
-fn tree_view_row_activated(tree_view: gtk::TreeView, tree_path: gtk::TreePath, tree_view_column: gtk::TreeViewColumn, exec_nix_store_res: ExecNixStoreRes) {
+fn tree_view_row_activated(
+    tree_view: gtk::TreeView,
+    tree_path: gtk::TreePath,
+    tree_view_column: gtk::TreeViewColumn,
+    exec_nix_store_res: ExecNixStoreRes,
+) {
     match exec_nix_store_res.res {
         Err(_) => {
             return;
-        },
+        }
         Ok(res) => {
             let column_pos = get_tree_view_column_pos(tree_view.clone(), tree_view_column.clone());
             let path = gtk_tree_path_to_tree_path(tree_path.clone());
@@ -191,11 +205,16 @@ fn tree_view_row_activated(tree_view: gtk::TreeView, tree_path: gtk::TreePath, t
             let option_nix_query_entry = nix_query_tree.lookup(path.clone());
 
             // stupid rust
-            match (column_pos == Column::Recurse as usize, option_nix_query_entry) {
+            match (
+                column_pos == Column::Recurse as usize,
+                option_nix_query_entry,
+            ) {
                 (true, Some(nix_query_entry)) if nix_query_entry.1 == Recurse::Yes => {
                     let option_first_path = res.map.lookup_first(&nix_query_entry.0);
                     match option_first_path {
-                        None => panic!("Nothing in our map for this drv.  This should hever happen."),
+                        None => {
+                            panic!("Nothing in our map for this drv.  This should hever happen.")
+                        }
                         Some(first_path) => {
                             let first_gtk_path = tree_path_to_gtk_tree_path(first_path);
                             let col = tree_view.get_column(Column::Item as i32);
@@ -204,7 +223,13 @@ fn tree_view_row_activated(tree_view: gtk::TreeView, tree_path: gtk::TreePath, t
                             tree_view.expand_to_path(&first_gtk_path);
 
                             // Scroll to the newly opened path.
-                            tree_view.scroll_to_cell(Some(&first_gtk_path), col.as_ref(), true, 0.5, 0.5);
+                            tree_view.scroll_to_cell(
+                                Some(&first_gtk_path),
+                                col.as_ref(),
+                                true,
+                                0.5,
+                                0.5,
+                            );
 
                             let tree_selection: gtk::TreeSelection = tree_view.get_selection();
                             // Select the newly opened path.
@@ -220,7 +245,10 @@ fn tree_view_row_activated(tree_view: gtk::TreeView, tree_path: gtk::TreePath, t
     }
 }
 
-fn setup_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) -> (gtk::TreeStore, gtk::TreeView) {
+fn setup_tree_view(
+    builder: gtk::Builder,
+    nix_store_res: &ExecNixStoreRes,
+) -> (gtk::TreeStore, gtk::TreeView) {
     let tree_view: gtk::TreeView = builder.get_object_expect("treeView");
     let tree_store: gtk::TreeStore =
         gtk::TreeStore::new(&[glib::types::Type::String, glib::types::Type::String]);
@@ -235,25 +263,32 @@ fn setup_tree_view(builder: gtk::Builder, nix_store_res: &ExecNixStoreRes) -> (g
 
     // TODO: Pull this out into a separate function.
     tree_view.connect_row_activated(move |tree_view_ref, tree_path, tree_view_column| {
-        tree_view_row_activated(tree_view_ref.clone(), tree_path.clone(), tree_view_column.clone(), res_clone.clone());
+        tree_view_row_activated(
+            tree_view_ref.clone(),
+            tree_path.clone(),
+            tree_view_column.clone(),
+            res_clone.clone(),
+        );
     });
 
-    // treeView.button_press_event.connect ((event) => {
-    // if (event.type == EventType.BUTTON_PRESS && event.button == 3) {
-    //     Gtk.Menu menu = new Gtk.Menu ();
-    //     Gtk.MenuItem menu_item = new Gtk.MenuItem.with_label ("Add file");
-    //     menu.attach_to_widget (treeView, null);
-    //     menu.add (menu_item);
-    //     menu.show_all ();
-    //     menu.popup (null, null, null, event.button, event.time);
-    // }
-    // });
+    tree_view.connect_button_press_event(
+        |tree_view_ref, event_button| {
+            println!("In button press event!!!");
 
-    tree_view.connect_button_press_event(|tree_view_ref, event_button| {
-        println!("In button press event!!!");
+            if event_button.get_event_type() == gdk::EventType::ButtonPress
+                && event_button.get_button() == 3
+            {
+                let menu: gtk::Menu = gtk::Menu::new();
+                let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this...");
+                menu.append(&search_for_this_menu_item);
+                menu.set_property_attach_widget(Some(tree_view_ref));
+                menu.show_all();
+                menu.popup_at_pointer(Some(event_button));
+            }
 
-        Inhibit(false)
-    });
+            Inhibit(false)
+        }
+    );
 
     (tree_store, tree_view)
 }
