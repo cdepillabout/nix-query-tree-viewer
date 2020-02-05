@@ -246,6 +246,23 @@ fn nix_store_res_lookup_first_query_entry<'a, 'b>(
     nix_store_res.map.lookup_first(&nix_query_entry.0)
 }
 
+fn gtk_tree_path_is_for_recurse_column(
+    tree_view: gtk::TreeView,
+    tree_view_column: gtk::TreeViewColumn,
+    tree_path: gtk::TreePath,
+    nix_store_res: &NixStoreRes,
+) -> Option<&NixQueryEntry> {
+    let option_column = gtk_tree_view_column_to_column(tree_view.clone(), tree_view_column.clone());
+    let option_nix_query_entry_is_recurse =
+        nix_store_res_lookup_gtk_path(&nix_store_res, tree_path.clone())
+            .filter(|nix_query_entry| nix_query_entry.1 == Recurse::Yes);
+
+    match (option_column, option_nix_query_entry_is_recurse) {
+        (Some(Column::Recurse), Some(nix_query_entry)) => Some(nix_query_entry),
+        _ => None,
+    }
+}
+
 // This function assumes that nix_query_entry actually exists in NixStoreRes
 fn gtk_tree_view_go_to_path_for_query_entry(
     tree_view: gtk::TreeView,
@@ -273,19 +290,16 @@ fn tree_view_row_activated(
             return;
         }
         Ok(res) => {
-            let option_column =
-                gtk_tree_view_column_to_column(tree_view.clone(), tree_view_column.clone());
-            let option_nix_query_entry_is_recurse =
-                nix_store_res_lookup_gtk_path(&res, tree_path.clone())
-                    .filter(|nix_query_entry| nix_query_entry.1 == Recurse::Yes);
-
-            match (option_column, option_nix_query_entry_is_recurse) {
-                (Some(Column::Recurse), Some(nix_query_entry)) => {
-                    gtk_tree_view_go_to_path_for_query_entry(tree_view, &res, &nix_query_entry);
+            match gtk_tree_path_is_for_recurse_column(
+                tree_view.clone(),
+                tree_view_column.clone(),
+                tree_path.clone(),
+                &res,
+            ) {
+                Some(nix_query_entry) => {
+                    gtk_tree_view_go_to_path_for_query_entry(tree_view, &res, &nix_query_entry)
                 }
-                _ => {
-                    toggle_row(tree_view.clone(), tree_path.clone(), false);
-                }
+                _ => toggle_row(tree_view.clone(), tree_path.clone(), false),
             }
         }
     }
