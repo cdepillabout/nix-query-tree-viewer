@@ -1,4 +1,5 @@
 mod builder;
+mod css;
 mod menu;
 mod statusbar;
 mod stack;
@@ -31,35 +32,13 @@ fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_
     );
 }
 
-fn setup_css(window: gtk::Window) {
-    let screen: gdk::Screen = match window.get_screen() {
-        Some(screen) => screen,
-        None => {
-            println!("Failed to get the screen for window.");
-            return;
-        }
-    };
-    let css_provider = gtk::CssProvider::new();
-    let css_src = include_str!("../style/style.css");
-    match css_provider.load_from_data(css_src.as_bytes()) {
-        Err(err) => println!("Failed to load css provider from data: {}", err),
-        Ok(_) => {
-            gtk::StyleContext::add_provider_for_screen(
-                &screen,
-                &css_provider,
-                gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-            );
-        }
-    }
-}
-
 fn app_activate(exec_nix_store_res: ExecNixStoreRes, app: gtk::Application) {
     let builder = builder::create();
 
     let window: gtk::ApplicationWindow = builder.get_object_expect("appWindow");
     window.set_application(Some(&app));
 
-    setup_css(window.clone().upcast());
+    css::setup(window.clone().upcast());
 
     let exec_nix_store_res = Rc::new(exec_nix_store_res);
 
