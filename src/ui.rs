@@ -6,6 +6,7 @@ use gio::prelude::*;
 use glib::clone;
 use gtk::prelude::*;
 use std::path::Path;
+use std::rc::Rc;
 
 use super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreErr};
 use builder::*;
@@ -84,7 +85,9 @@ fn app_activate(exec_nix_store_res: ExecNixStoreRes, app: gtk::Application) {
 
     setup_css(window.clone().upcast());
 
-    switcher::setup_switcher(builder.clone(), &exec_nix_store_res);
+    let exec_nix_store_res = Rc::new(exec_nix_store_res);
+
+    switcher::setup_switcher(builder.clone(), exec_nix_store_res);
 
     connect_menu_buttons(app, builder);
 
