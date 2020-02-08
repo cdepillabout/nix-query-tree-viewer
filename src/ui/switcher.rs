@@ -1,7 +1,6 @@
 use std::convert::TryFrom;
 
 use glib::clone;
-use gtk::prelude::*;
 use std::path::PathBuf;
 use std::collections::VecDeque;
 use std::rc::Rc;
