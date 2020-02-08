@@ -2,7 +2,6 @@ mod column;
 
 use glib::clone;
 use std::collections::VecDeque;
-use std::convert::TryFrom;
 use std::path::PathBuf;
 use std::rc::Rc;
 
@@ -94,20 +93,6 @@ fn create_columns(tree_view: gtk::TreeView) {
     create_link_column(tree_view);
 }
 
-fn get_tree_view_column_pos(
-    tree_view: gtk::TreeView,
-    tree_view_column: gtk::TreeViewColumn,
-) -> usize {
-    let all_tree_view_columns = tree_view.get_columns();
-    let option_pos = all_tree_view_columns
-        .iter()
-        .position(|col| *col == tree_view_column);
-    match option_pos {
-        None => panic!("No column matching id.  This should never happen."),
-        Some(pos) => pos,
-    }
-}
-
 fn gtk_tree_path_to_tree_path(gtk_tree_path: gtk::TreePath) -> tree::Path {
     tree::Path(
         gtk_tree_path
@@ -151,29 +136,11 @@ fn nix_query_tree_lookup_gtk_path(
     nix_query_tree.lookup(path.clone()).cloned()
 }
 
-fn gtk_tree_view_column_to_column(
-    tree_view: gtk::TreeView,
-    tree_view_column: gtk::TreeViewColumn,
-) -> Option<Column> {
-    let column_pos: usize = get_tree_view_column_pos(tree_view.clone(), tree_view_column.clone());
-    Column::try_from(column_pos).ok()
-}
-
 fn nix_store_res_lookup_gtk_path(
     nix_store_res: Rc<NixStoreRes>,
     tree_path: gtk::TreePath,
 ) -> Option<NixQueryEntry> {
     nix_query_tree_lookup_gtk_path(Rc::clone(&nix_store_res.tree), tree_path)
-}
-
-fn nix_store_res_lookup_first_query_entry(
-    nix_store_res_rc: Rc<NixStoreRes>,
-    nix_query_entry: &NixQueryEntry,
-) -> Option<tree::Path> {
-    nix_store_res_rc
-        .map
-        .lookup_first(&nix_query_entry.0)
-        .cloned()
 }
 
 fn gtk_tree_path_is_for_recurse_column(
@@ -182,7 +149,7 @@ fn gtk_tree_path_is_for_recurse_column(
     tree_path: gtk::TreePath,
     nix_store_res_rc: Rc<NixStoreRes>,
 ) -> Option<NixQueryEntry> {
-    let option_column = gtk_tree_view_column_to_column(tree_view.clone(), tree_view_column.clone());
+    let option_column = Column::from_gtk(tree_view.clone(), tree_view_column.clone());
     let option_nix_query_entry_is_recurse =
         nix_store_res_lookup_gtk_path(nix_store_res_rc, tree_path.clone())
             .filter(|nix_query_entry| nix_query_entry.1 == Recurse::Yes);
@@ -193,14 +160,14 @@ fn gtk_tree_path_is_for_recurse_column(
     }
 }
 
-// This function assumes that nix_query_entry actually exists in NixStoreRes
+// Warning: This function assumes that nix_query_entry actually exists in NixStoreRes
 fn go_to_path_for_query_entry(
     tree_view: gtk::TreeView,
     nix_store_res_rc: Rc<NixStoreRes>,
     nix_query_entry: &NixQueryEntry,
 ) {
     let option_first_path =
-        nix_store_res_lookup_first_query_entry(nix_store_res_rc, &nix_query_entry);
+        nix_store_res_rc.lookup_first_query_entry(&nix_query_entry);
     match option_first_path {
         None => panic!("Nothing in our map for this drv.  This should hever happen."),
         Some(first_path) => {
@@ -240,7 +207,8 @@ fn create_search_for_this_menu_item(
     // TODO: Shouldn't have to clone exec_nix_store_res
     search_for_this_menu_item.connect_activate(clone!(@weak tree_view, @weak builder => move |_| {
         clear(tree_view.clone());
-        render_tree_store(builder, tree_view, Rc::clone(&exec_nix_store_res_rc));
+        render_tree_store(builder.clone(), tree_view, Rc::clone(&exec_nix_store_res_rc));
+        disable(builder);
     }));
 
     search_for_this_menu_item
@@ -378,6 +346,11 @@ fn clear(tree_view: gtk::TreeView) {
     if let Some(tree_store) = option_tree_store {
         tree_store.clear();
     }
+}
+
+fn disable(builder: gtk::Builder, ) {
+    let tree_view: gtk::TreeView = builder.get_object_expect("treeView");
+    tree_view.set_sensitive(false);
 }
 
 fn render_nix_store_res(

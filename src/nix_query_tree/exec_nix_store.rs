@@ -2,7 +2,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::rc::Rc;
 
-use super::{NixQueryPathMap, NixQueryTree};
+use super::{NixQueryEntry, NixQueryPathMap, NixQueryTree};
+use crate::tree;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum NixStoreErr {
@@ -39,6 +40,16 @@ impl NixStoreRes {
             tree: Rc::new(tree),
             map: Rc::new(map),
         }
+    }
+
+    pub fn lookup_first_query_entry(
+        &self,
+        nix_query_entry: &NixQueryEntry,
+    ) -> Option<tree::Path> {
+        self
+            .map
+            .lookup_first(&nix_query_entry.0)
+            .cloned()
     }
 }
 
