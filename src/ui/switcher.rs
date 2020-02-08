@@ -12,6 +12,8 @@ use super::super::tree;
 use super::super::tree::Tree;
 use super::builder::*;
 
+mod raw;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(i32)]
 enum Column {
@@ -368,18 +370,6 @@ pub fn setup_tree_view(
     tree_view
 }
 
-pub fn setup_raw_text_view(builder: gtk::Builder, exec_nix_store_res: Rc<ExecNixStoreRes>) {
-    let text_buffer: gtk::TextBuffer = builder.get_object_expect("rawTextBuffer");
-
-    // TODO: This is super ugly.
-    let text: String = match &exec_nix_store_res.res {
-        Err(nix_store_err) => nix_store_err.to_string(),
-        Ok(nix_store_res_rc) => String::clone(&nix_store_res_rc.raw),
-    };
-
-    text_buffer.set_text(&text);
-}
-
 pub fn tree_view_clear(tree_view: gtk::TreeView) {
     // let none_tree_model: Option<&gtk::TreeModel> = None;
     // tree_view.set_model(none_tree_model);
@@ -405,7 +395,7 @@ fn render_nix_store_res(
     }
 }
 
-pub fn setup_switcher(builder: gtk::Builder, exec_nix_store_res_rc: Rc<ExecNixStoreRes>) {
+pub fn setup(builder: gtk::Builder, exec_nix_store_res_rc: Rc<ExecNixStoreRes>) {
     let tree_view = setup_tree_view(builder.clone(), Rc::clone(&exec_nix_store_res_rc));
 
     tree_view_render_tree_store(builder.clone(), tree_view.clone(), Rc::clone(&exec_nix_store_res_rc));
@@ -413,5 +403,5 @@ pub fn setup_switcher(builder: gtk::Builder, exec_nix_store_res_rc: Rc<ExecNixSt
     // expand the first row of the tree view
     tree_view.expand_row(&gtk::TreePath::new_first(), false);
 
-    setup_raw_text_view(builder.clone(), exec_nix_store_res_rc);
+    raw::setup(builder.clone(), exec_nix_store_res_rc);
 }

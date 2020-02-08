@@ -87,7 +87,7 @@ fn app_activate(exec_nix_store_res: ExecNixStoreRes, app: gtk::Application) {
 
     let exec_nix_store_res = Rc::new(exec_nix_store_res);
 
-    switcher::setup_switcher(builder.clone(), exec_nix_store_res);
+    switcher::setup(builder.clone(), exec_nix_store_res);
 
     connect_menu_buttons(app, builder);
 

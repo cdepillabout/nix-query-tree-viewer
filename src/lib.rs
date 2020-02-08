@@ -1,8 +1,9 @@
 
 pub mod nix_query_tree;
-pub mod opts;
 pub mod tree;
-pub mod ui;
+
+mod opts;
+mod ui;
 
 extern crate gio;
 extern crate gtk;
