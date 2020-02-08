@@ -6,11 +6,12 @@ use std::path::PathBuf;
 use std::collections::VecDeque;
 use std::rc::Rc;
 
-use super::super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
-use super::super::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse};
-use super::super::tree;
-use super::super::tree::Tree;
-use super::builder::*;
+use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
+use crate::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse};
+use crate::tree;
+use crate::tree::Tree;
+
+use super::prelude::*;
 
 mod raw;
 

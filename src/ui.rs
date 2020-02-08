@@ -1,15 +1,16 @@
-pub mod builder;
-pub mod switcher;
+mod builder;
+mod statusbar;
+mod switcher;
 
-use gdk::prelude::*;
-use gio::prelude::*;
+pub mod prelude;
+
 use glib::clone;
-use gtk::prelude::*;
 use std::path::Path;
 use std::rc::Rc;
 
 use super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreErr};
-use builder::*;
+
+use prelude::*;
 
 fn connect_menu_buttons(app: gtk::Application, builder: gtk::Builder) {
     let about_menu_item: gtk::MenuItem = builder.get_object_expect("aboutMenuItem");
@@ -25,12 +26,6 @@ fn connect_menu_buttons(app: gtk::Application, builder: gtk::Builder) {
     }));
 }
 
-fn show_msg_in_statusbar(builder: gtk::Builder, msg: &str) {
-    let statusbar: gtk::Statusbar = builder.get_object_expect("statusbar");
-    statusbar.remove_all(0);
-    statusbar.push(0, msg);
-}
-
 fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_err: &NixStoreErr) {
     let error_dialog: gtk::MessageDialog = builder.get_object_expect("errorDialog");
     let error_msg = &format!(
@@ -41,7 +36,7 @@ fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_
     error_dialog.set_property_secondary_text(Some(error_msg));
     error_dialog.run();
     error_dialog.destroy();
-    show_msg_in_statusbar(
+    statusbar::show_msg(
         builder,
         &format!(
             "Error running `nix-store --query --tree {}`",
