@@ -13,3 +13,9 @@ where
         ))
     }
 }
+
+pub fn create() -> gtk::Builder {
+    let glade_src = include_str!("../../glade/ui.glade");
+    gtk::Builder::new_from_string(glade_src)
+}
+

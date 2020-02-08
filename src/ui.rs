@@ -1,6 +1,7 @@
 mod builder;
+mod menu;
 mod statusbar;
-mod switcher;
+mod stack;
 
 pub mod prelude;
 
@@ -45,11 +46,6 @@ fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_
     );
 }
 
-fn create_builder() -> gtk::Builder {
-    let glade_src = include_str!("../glade/ui.glade");
-    gtk::Builder::new_from_string(glade_src)
-}
-
 fn setup_css(window: gtk::Window) {
     let screen: gdk::Screen = match window.get_screen() {
         Some(screen) => screen,
@@ -73,7 +69,7 @@ fn setup_css(window: gtk::Window) {
 }
 
 fn app_activate(exec_nix_store_res: ExecNixStoreRes, app: gtk::Application) {
-    let builder = create_builder();
+    let builder = builder::create();
 
     let window: gtk::ApplicationWindow = builder.get_object_expect("appWindow");
     window.set_application(Some(&app));
@@ -82,9 +78,9 @@ fn app_activate(exec_nix_store_res: ExecNixStoreRes, app: gtk::Application) {
 
     let exec_nix_store_res = Rc::new(exec_nix_store_res);
 
-    switcher::setup(builder.clone(), exec_nix_store_res);
+    stack::setup(builder.clone(), exec_nix_store_res);
 
-    connect_menu_buttons(app, builder);
+    menu::connect_signals(app, builder);
 
     window.show_all();
 }
