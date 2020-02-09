@@ -1,11 +1,11 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::{NixQueryEntry, NixQueryPathMap, NixQueryTree};
 use crate::tree;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum NixStoreErr {
     CommandErr(String),
     Utf8Err(String),
@@ -25,20 +25,20 @@ impl std::fmt::Display for NixStoreErr {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NixStoreRes {
-    pub raw: Rc<String>,
-    pub tree: Rc<NixQueryTree>,
-    pub map: Rc<NixQueryPathMap>,
+    pub raw: Arc<String>,
+    pub tree: Arc<NixQueryTree>,
+    pub map: Arc<NixQueryPathMap>,
 }
 
 impl NixStoreRes {
     pub fn new(raw: String, tree: NixQueryTree) -> Self {
         let map: NixQueryPathMap = tree.path_map();
         NixStoreRes {
-            raw: Rc::new(raw),
-            tree: Rc::new(tree),
-            map: Rc::new(map),
+            raw: Arc::new(raw),
+            tree: Arc::new(tree),
+            map: Arc::new(map),
         }
     }
 
@@ -53,14 +53,14 @@ impl NixStoreRes {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ExecNixStoreRes {
     pub nix_store_path: PathBuf,
-    pub res: Result<Rc<NixStoreRes>, NixStoreErr>,
+    pub res: Result<Arc<NixStoreRes>, NixStoreErr>,
 }
 
 impl ExecNixStoreRes {
-    pub fn new(nix_store_path: PathBuf, res: Result<Rc<NixStoreRes>, NixStoreErr>) -> Self {
+    pub fn new(nix_store_path: PathBuf, res: Result<Arc<NixStoreRes>, NixStoreErr>) -> Self {
         ExecNixStoreRes {
             nix_store_path,
             res,
@@ -68,7 +68,7 @@ impl ExecNixStoreRes {
     }
 }
 
-pub fn nix_store_res(nix_store_path: &Path) -> Result<Rc<NixStoreRes>, NixStoreErr> {
+pub fn nix_store_res(nix_store_path: &Path) -> Result<Arc<NixStoreRes>, NixStoreErr> {
     let nix_store_output: Output = Command::new("nix-store")
         .args(&["--query", "--tree", &nix_store_path.to_string_lossy()])
         .output()
@@ -77,7 +77,7 @@ pub fn nix_store_res(nix_store_path: &Path) -> Result<Rc<NixStoreRes>, NixStoreE
     if nix_store_output.status.success() {
         let stdout = from_utf8(nix_store_output.stdout)?;
         super::parsing::nix_query_tree_parser(&stdout.clone())
-            .map(|nix_query_tree| Rc::new(NixStoreRes::new(stdout, nix_query_tree)))
+            .map(|nix_query_tree| Arc::new(NixStoreRes::new(stdout, nix_query_tree)))
             .map_err(|nom_err| NixStoreErr::ParseErr(nom_err.to_string()))
     } else {
         let stderr = from_utf8(nix_store_output.stderr)?;
@@ -85,7 +85,7 @@ pub fn nix_store_res(nix_store_path: &Path) -> Result<Rc<NixStoreRes>, NixStoreE
     }
 }
 
-pub fn exec_nix_store(nix_store_path: PathBuf) -> ExecNixStoreRes {
+pub fn run(nix_store_path: PathBuf) -> ExecNixStoreRes {
     ExecNixStoreRes {
         nix_store_path: nix_store_path.clone(),
         res: nix_store_res(&nix_store_path),

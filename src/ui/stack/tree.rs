@@ -3,14 +3,17 @@ mod column;
 use glib::clone;
 use std::collections::VecDeque;
 use std::path::PathBuf;
-use std::rc::Rc;
+use std::sync::Arc;
+use std::thread;
 
+use crate::nix_query_tree;
 use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
 use crate::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse};
 use crate::tree;
 use crate::tree::Tree;
 
 use super::super::prelude::*;
+use super::super::statusbar;
 
 use column::Column;
 
@@ -129,7 +132,7 @@ fn tree_view_go_to_path(tree_view: gtk::TreeView, first_path: &tree::Path) {
 }
 
 fn nix_query_tree_lookup_gtk_path(
-    nix_query_tree: Rc<NixQueryTree>,
+    nix_query_tree: Arc<NixQueryTree>,
     tree_path: gtk::TreePath,
 ) -> Option<NixQueryEntry> {
     let path = gtk_tree_path_to_tree_path(tree_path.clone());
@@ -137,17 +140,17 @@ fn nix_query_tree_lookup_gtk_path(
 }
 
 fn nix_store_res_lookup_gtk_path(
-    nix_store_res: Rc<NixStoreRes>,
+    nix_store_res: Arc<NixStoreRes>,
     tree_path: gtk::TreePath,
 ) -> Option<NixQueryEntry> {
-    nix_query_tree_lookup_gtk_path(Rc::clone(&nix_store_res.tree), tree_path)
+    nix_query_tree_lookup_gtk_path(Arc::clone(&nix_store_res.tree), tree_path)
 }
 
 fn gtk_tree_path_is_for_recurse_column(
     tree_view: gtk::TreeView,
     tree_view_column: gtk::TreeViewColumn,
     tree_path: gtk::TreePath,
-    nix_store_res_rc: Rc<NixStoreRes>,
+    nix_store_res_rc: Arc<NixStoreRes>,
 ) -> Option<NixQueryEntry> {
     let option_column = Column::from_gtk(tree_view.clone(), tree_view_column.clone());
     let option_nix_query_entry_is_recurse =
@@ -163,7 +166,7 @@ fn gtk_tree_path_is_for_recurse_column(
 // Warning: This function assumes that nix_query_entry actually exists in NixStoreRes
 fn go_to_path_for_query_entry(
     tree_view: gtk::TreeView,
-    nix_store_res_rc: Rc<NixStoreRes>,
+    nix_store_res_rc: Arc<NixStoreRes>,
     nix_query_entry: &NixQueryEntry,
 ) {
     let option_first_path =
@@ -180,35 +183,55 @@ fn handle_row_activated(
     tree_view: gtk::TreeView,
     tree_path: gtk::TreePath,
     tree_view_column: gtk::TreeViewColumn,
-    nix_store_res_rc: Rc<NixStoreRes>,
+    nix_store_res_rc: Arc<NixStoreRes>,
 ) {
     match gtk_tree_path_is_for_recurse_column(
         tree_view.clone(),
         tree_view_column.clone(),
         tree_path.clone(),
-        Rc::clone(&nix_store_res_rc),
+        Arc::clone(&nix_store_res_rc),
     ) {
         Some(nix_query_entry) => go_to_path_for_query_entry(
             tree_view,
-            Rc::clone(&nix_store_res_rc),
+            Arc::clone(&nix_store_res_rc),
             &nix_query_entry,
         ),
         _ => toggle_row(tree_view.clone(), tree_path.clone(), false),
     }
 }
 
+fn redisplay_after_search(builder: gtk::Builder, exec_nix_store_res: Arc<ExecNixStoreRes>) {
+    println!("Finished search...");
+}
+
+fn handle_search_for_this_menu_item_activated(builder: gtk::Builder, tree_view: gtk::TreeView, exec_nix_store_res_rc: Arc<ExecNixStoreRes>) {
+    disable(builder.clone());
+    // TODO: actually put in the item we are searching for...
+    statusbar::show_msg(builder.clone(), "Searching for TODO...");
+
+    thread::spawn(move || {
+        let path_str: String = "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let path = PathBuf::from(path_str);
+        let exec_nix_store_res = nix_query_tree::exec_nix_store::run(path);
+        glib::source::idle_add(move || {
+            redisplay_after_search(builder, Arc::new(exec_nix_store_res));
+            glib::source::Continue(false)
+        });
+    });
+
+    // clear(tree_view.clone());
+    // render_tree_store(builder.clone(), tree_view, Arc::clone(&exec_nix_store_res_rc));
+}
+
 fn create_search_for_this_menu_item(
     builder: gtk::Builder,
     tree_view: gtk::TreeView,
-    exec_nix_store_res_rc: Rc<ExecNixStoreRes>,
+    exec_nix_store_res_rc: Arc<ExecNixStoreRes>,
 ) -> gtk::MenuItem {
     let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this");
 
-    // TODO: Shouldn't have to clone exec_nix_store_res
     search_for_this_menu_item.connect_activate(clone!(@weak tree_view, @weak builder => move |_| {
-        clear(tree_view.clone());
-        render_tree_store(builder.clone(), tree_view, Rc::clone(&exec_nix_store_res_rc));
-        disable(builder);
+        handle_search_for_this_menu_item_activated(builder, tree_view, Arc::clone(&exec_nix_store_res_rc));
     }));
 
     search_for_this_menu_item
@@ -218,16 +241,16 @@ fn handle_button_press_event(
     builder: gtk::Builder,
     tree_view: gtk::TreeView,
     event_button: gdk::EventButton,
-    nix_store_res_rc: Rc<NixStoreRes>,
+    nix_store_res_rc: Arc<NixStoreRes>,
 ) -> Inhibit {
     if event_button.get_event_type() == gdk::EventType::ButtonPress
         && event_button.get_button() == 3
     {
         let menu: gtk::Menu = gtk::Menu::new();
         // TODO: this nix store exec thing is really hacky...
-        let exec_nix_store_res_rc = Rc::new(ExecNixStoreRes {
+        let exec_nix_store_res_rc = Arc::new(ExecNixStoreRes {
             nix_store_path: PathBuf::from(""),
-            res: Ok(Rc::clone(&nix_store_res_rc)),
+            res: Ok(Arc::clone(&nix_store_res_rc)),
         });
         let search_for_this_menu_item = create_search_for_this_menu_item(
             builder.clone(),
@@ -244,7 +267,7 @@ fn handle_button_press_event(
                 tree_view.clone(),
                 tree_view_column,
                 tree_path,
-                Rc::clone(&nix_store_res_rc),
+                Arc::clone(&nix_store_res_rc),
             ) {
                 let go_to_first_instance_menu_item =
                     gtk::MenuItem::new_with_label("Go to first instance");
@@ -252,7 +275,7 @@ fn handle_button_press_event(
                 go_to_first_instance_menu_item.connect_activate(
                     clone!(@strong nix_query_entry, @weak tree_view =>
                         move |_|
-                            go_to_path_for_query_entry(tree_view, Rc::clone(&nix_store_res_rc), &nix_query_entry)
+                            go_to_path_for_query_entry(tree_view, Arc::clone(&nix_store_res_rc), &nix_query_entry)
                     )
                 );
 
@@ -271,28 +294,28 @@ fn handle_button_press_event(
 fn connect_signals(
     builder: gtk::Builder,
     tree_view: gtk::TreeView,
-    exec_nix_store_res: Rc<ExecNixStoreRes>,
+    exec_nix_store_res: Arc<ExecNixStoreRes>,
 ) {
     // Only connect signals to the tree when we successfully ran
     // nix-store.
     if let Ok(nix_store_res_rc) = &exec_nix_store_res.res {
-        let nix_store_res_rc_cloned: Rc<NixStoreRes> = Rc::clone(nix_store_res_rc);
+        let nix_store_res_rc_cloned: Arc<NixStoreRes> = Arc::clone(nix_store_res_rc);
         tree_view.connect_row_activated(move |tree_view_ref, tree_path, tree_view_column| {
             handle_row_activated(
                 tree_view_ref.clone(),
                 tree_path.clone(),
                 tree_view_column.clone(),
-                Rc::clone(&nix_store_res_rc_cloned),
+                Arc::clone(&nix_store_res_rc_cloned),
             );
         });
 
-        let nix_store_res_rc_cloned: Rc<NixStoreRes> = Rc::clone(nix_store_res_rc);
+        let nix_store_res_rc_cloned: Arc<NixStoreRes> = Arc::clone(nix_store_res_rc);
         tree_view.connect_button_press_event(move |tree_view_ref, event_button| {
             handle_button_press_event(
                 builder.clone(),
                 tree_view_ref.clone(),
                 event_button.clone(),
-                Rc::clone(&nix_store_res_rc_cloned),
+                Arc::clone(&nix_store_res_rc_cloned),
             )
         });
     }
@@ -310,7 +333,7 @@ fn create_store(tree_view: gtk::TreeView) -> gtk::TreeStore {
 fn render_tree_store(
     builder: gtk::Builder,
     tree_view: gtk::TreeView,
-    exec_nix_store_res: Rc<ExecNixStoreRes>,
+    exec_nix_store_res: Arc<ExecNixStoreRes>,
 ) {
     let tree_store = create_store(tree_view);
 
@@ -319,7 +342,7 @@ fn render_tree_store(
 
 pub fn setup_tree_view(
     builder: gtk::Builder,
-    exec_nix_store_res_rc: Rc<ExecNixStoreRes>,
+    exec_nix_store_res_rc: Arc<ExecNixStoreRes>,
 ) -> gtk::TreeView {
     let tree_view: gtk::TreeView = builder.get_object_expect("treeView");
 
@@ -356,7 +379,7 @@ fn disable(builder: gtk::Builder, ) {
 fn render_nix_store_res(
     builder: gtk::Builder,
     tree_store: gtk::TreeStore,
-    nix_store_res: Rc<ExecNixStoreRes>,
+    nix_store_res: Arc<ExecNixStoreRes>,
 ) {
     match &nix_store_res.res {
         // Err(err) => render_nix_store_err(builder, &nix_store_res.nix_store_path, err),
@@ -365,13 +388,13 @@ fn render_nix_store_res(
     }
 }
 
-pub fn setup(builder: gtk::Builder, exec_nix_store_res_rc: Rc<ExecNixStoreRes>) {
-    let tree_view = setup_tree_view(builder.clone(), Rc::clone(&exec_nix_store_res_rc));
+pub fn setup(builder: gtk::Builder, exec_nix_store_res_rc: Arc<ExecNixStoreRes>) {
+    let tree_view = setup_tree_view(builder.clone(), Arc::clone(&exec_nix_store_res_rc));
 
     render_tree_store(
         builder.clone(),
         tree_view.clone(),
-        Rc::clone(&exec_nix_store_res_rc),
+        Arc::clone(&exec_nix_store_res_rc),
     );
 
     // expand the first row of the tree view

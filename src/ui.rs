@@ -7,14 +7,64 @@ mod stack;
 pub mod prelude;
 
 use std::path::Path;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreErr};
 
 use prelude::*;
 
-fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_err: &NixStoreErr) {
-    let error_dialog: gtk::MessageDialog = builder.get_object_expect("errorDialog");
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum Message {
+    Display(ExecNixStoreRes),
+}
+
+#[derive(Clone, Debug)]
+struct State {
+    app: gtk::Application,
+    builder: gtk::Builder,
+    sender: glib::Sender<Message>,
+}
+
+impl State {
+    fn new(app: gtk::Application, sender: glib::Sender<Message>) -> Self {
+        State {
+            app,
+            builder: builder::create(),
+            sender,
+        }
+    }
+
+    fn get_app_win(&self) -> gtk::ApplicationWindow {
+        self.builder.get_object_expect("appWindow")
+    }
+
+    fn get_about_menu_item(&self) -> gtk::MenuItem {
+        self.builder.get_object_expect("aboutMenuItem")
+    }
+
+    fn get_quit_menu_item(&self) -> gtk::MenuItem {
+        self.builder.get_object_expect("quitMenuItem")
+    }
+    
+    fn get_about_dialog(&self) -> gtk::AboutDialog {
+        self.builder.get_object_expect("aboutDialog")
+    }
+
+    fn get_error_dialog(&self) -> gtk::MessageDialog {
+        self.builder.get_object_expect("errorDialog")
+    }
+
+    fn get_raw_text_buffer(&self) -> gtk::TextBuffer {
+        self.builder.get_object_expect("rawTextBuffer")
+    }
+
+    fn get_statusbar(&self) -> gtk::StatusBar {
+        self.builder.get_object_expect("statusbar")
+    }
+}
+
+fn render_nix_store_err(state: &State, nix_store_path: &Path, nix_store_err: &NixStoreErr) {
+    let error_dialog: gtk::MessageDialog = state.get_error_dialog();
     let error_msg = &format!(
         "Error running `nix-store --query --tree {}`:\n\n{}",
         nix_store_path.to_string_lossy(),
@@ -24,7 +74,7 @@ fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_
     error_dialog.run();
     error_dialog.destroy();
     statusbar::show_msg(
-        builder,
+        state,
         &format!(
             "Error running `nix-store --query --tree {}`",
             nix_store_path.to_string_lossy()
@@ -33,20 +83,24 @@ fn render_nix_store_err(builder: gtk::Builder, nix_store_path: &Path, nix_store_
 }
 
 fn app_activate(exec_nix_store_res: ExecNixStoreRes, app: gtk::Application) {
-    let builder = builder::create();
+    let (sender, receiver) = glib::MainContext::channel(glib::source::PRIORITY_DEFAULT);
 
-    let window: gtk::ApplicationWindow = builder.get_object_expect("appWindow");
+    let state = State::new(app, sender);
+
+    let window: gtk::ApplicationWindow = state.get_app_win();
     window.set_application(Some(&app));
 
     css::setup(window.clone().upcast());
 
-    let exec_nix_store_res = Rc::new(exec_nix_store_res);
+    let exec_nix_store_res = Arc::new(exec_nix_store_res);
 
-    stack::setup(builder.clone(), exec_nix_store_res);
+    stack::setup(&state, exec_nix_store_res);
 
-    menu::connect_signals(app, builder);
+    menu::connect_signals(state);
 
     window.show_all();
+
+    receiver.attach(None, |Message::Display(exec_nix_store_res)| glib::source::Continue(true));
 }
 
 pub fn run(nix_store_res: ExecNixStoreRes) {

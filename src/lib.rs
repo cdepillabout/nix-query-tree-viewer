@@ -11,7 +11,7 @@ pub fn default_main() {
 
     let opts = opts::Opts::parse_from_args();
 
-    let nix_store_res = nix_query_tree::exec_nix_store::exec_nix_store(opts.nix_store_path);
+    let nix_store_res = nix_query_tree::exec_nix_store::run(opts.nix_store_path);
 
     ui::run(nix_store_res);
 }

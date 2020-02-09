@@ -1,11 +1,12 @@
 
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes};
 
 use super::super::prelude::*;
+use super::super::super::ui;
 
-pub fn setup(builder: gtk::Builder, exec_nix_store_res: Rc<ExecNixStoreRes>) {
+pub fn setup(state: &ui::State, exec_nix_store_res: Arc<ExecNixStoreRes>) {
     let text_buffer: gtk::TextBuffer = builder.get_object_expect("rawTextBuffer");
 
     // TODO: This is super ugly.
