@@ -58,8 +58,12 @@ impl State {
         self.builder.get_object_expect("rawTextBuffer")
     }
 
-    fn get_statusbar(&self) -> gtk::StatusBar {
+    fn get_statusbar(&self) -> gtk::Statusbar {
         self.builder.get_object_expect("statusbar")
+    }
+
+    fn get_tree_view(&self) -> gtk::TreeView {
+        self.builder.get_object_expect("treeView")
     }
 }
 
