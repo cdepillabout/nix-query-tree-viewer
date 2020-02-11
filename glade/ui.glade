@@ -133,6 +133,16 @@
                     <child internal-child="selection">
                       <object class="GtkTreeSelection"/>
                     </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeViewColumnItem">
+                        <property name="title" translatable="yes">item</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeViewColumnRepeat">
+                        <property name="title" translatable="yes">repeat</property>
+                      </object>
+                    </child>
                     <style>
                       <class name="large-font"/>
                     </style>

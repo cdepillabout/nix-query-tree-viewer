@@ -72,8 +72,7 @@ fn toggle_row(tree_view: gtk::TreeView, tree_path: gtk::TreePath, recurse: bool)
 fn create_item_column(state: &ui::State) {
     let renderer = gtk::CellRendererText::new();
 
-    let column = gtk::TreeViewColumn::new();
-    column.set_title("item");
+    let column = state.get_tree_view_column_item();
     column.pack_start(&renderer, false);
     column.add_attribute(&renderer, "text", Column::Item as i32);
 
@@ -85,8 +84,7 @@ fn create_link_column(state: &ui::State) {
     renderer.set_property_underline(pango::Underline::Single);
     renderer.set_property_foreground(Some("blue"));
 
-    let column = gtk::TreeViewColumn::new();
-    column.set_title("repeat");
+    let column = state.get_tree_view_column_repeat();
     column.pack_end(&renderer, false);
     column.add_attribute(&renderer, "text", Column::Recurse as i32);
 
@@ -287,14 +285,13 @@ fn handle_button_press_event(
 
 fn connect_signals(
     state: &ui::State,
-    tree_view: gtk::TreeView,
     exec_nix_store_res: Arc<ExecNixStoreRes>,
 ) {
     // Only connect signals to the tree when we successfully ran
     // nix-store.
     if let Ok(nix_store_res_rc) = &exec_nix_store_res.res {
         let nix_store_res_rc_cloned: Arc<NixStoreRes> = Arc::clone(nix_store_res_rc);
-        tree_view.connect_row_activated(move |tree_view_ref, tree_path, tree_view_column| {
+        state.get_tree_view().connect_row_activated(move |tree_view_ref, tree_path, tree_view_column| {
             handle_row_activated(
                 tree_view_ref.clone(),
                 tree_path.clone(),
@@ -304,7 +301,7 @@ fn connect_signals(
         });
 
         let nix_store_res_rc_cloned: Arc<NixStoreRes> = Arc::clone(nix_store_res_rc);
-        tree_view.connect_button_press_event(
+        state.get_tree_view().connect_button_press_event(
             clone!(@strong state => move |tree_view_ref, event_button| {
                 handle_button_press_event(
                     &state,
@@ -317,21 +314,20 @@ fn connect_signals(
     }
 }
 
-fn create_store(tree_view: gtk::TreeView) -> gtk::TreeStore {
+fn create_store(state: &ui::State) -> gtk::TreeStore {
     let tree_store: gtk::TreeStore =
         gtk::TreeStore::new(&[glib::types::Type::String, glib::types::Type::String]);
 
-    tree_view.set_model(Some(&tree_store));
+    state.get_tree_view().set_model(Some(&tree_store));
 
     tree_store
 }
 
 fn render_tree_store(
     state: &ui::State,
-    tree_view: gtk::TreeView,
     exec_nix_store_res: Arc<ExecNixStoreRes>,
 ) {
-    let tree_store = create_store(tree_view);
+    let tree_store = create_store(state);
 
     render_nix_store_res(state, tree_store, exec_nix_store_res);
 }
@@ -344,7 +340,7 @@ pub fn setup_tree_view(
 
     create_columns(state);
 
-    connect_signals(state, tree_view.clone(), exec_nix_store_res_rc);
+    connect_signals(state, exec_nix_store_res_rc);
 
     tree_view
 }
@@ -373,7 +369,7 @@ fn disable(state: &ui::State) {
 }
 
 fn render_nix_store_res(
-    state: &ui::State,
+    _state: &ui::State,
     tree_store: gtk::TreeStore,
     nix_store_res: Arc<ExecNixStoreRes>,
 ) {
@@ -385,14 +381,13 @@ fn render_nix_store_res(
 }
 
 pub fn setup(state: &ui::State, exec_nix_store_res_rc: Arc<ExecNixStoreRes>) {
-    let tree_view = setup_tree_view(state, Arc::clone(&exec_nix_store_res_rc));
+    setup_tree_view(state, Arc::clone(&exec_nix_store_res_rc));
 
     render_tree_store(
         state,
-        tree_view.clone(),
         Arc::clone(&exec_nix_store_res_rc),
     );
 
     // expand the first row of the tree view
-    tree_view.expand_row(&gtk::TreePath::new_first(), false);
+    state.get_tree_view().expand_row(&gtk::TreePath::new_first(), false);
 }

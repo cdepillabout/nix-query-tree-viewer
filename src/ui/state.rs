@@ -54,4 +54,12 @@ impl State {
     pub fn get_tree_view(&self) -> gtk::TreeView {
         self.builder.get_object_expect("treeView")
     }
+
+    pub fn get_tree_view_column_item(&self) -> gtk::TreeViewColumn {
+        self.builder.get_object_expect("treeViewColumnItem")
+    }
+
+    pub fn get_tree_view_column_repeat(&self) -> gtk::TreeViewColumn {
+        self.builder.get_object_expect("treeViewColumnRepeat")
+    }
 }

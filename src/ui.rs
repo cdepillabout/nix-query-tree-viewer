@@ -42,7 +42,7 @@ fn app_activate(exec_nix_store_res: ExecNixStoreRes, app: gtk::Application) {
     let state = State::new(app, sender);
 
     let window: gtk::ApplicationWindow = state.get_app_win();
-    window.set_application(Some(&app));
+    window.set_application(Some(&state.app));
 
     css::setup(window.clone().upcast());
 
