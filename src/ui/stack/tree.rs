@@ -173,36 +173,34 @@ fn connect_signals(
     }
 }
 
-fn create_store(state: &ui::State) -> gtk::TreeStore {
+fn setup_store(state: &ui::State) {
     let tree_store: gtk::TreeStore =
         gtk::TreeStore::new(&[glib::types::Type::String, glib::types::Type::String]);
 
     state.get_tree_view().set_model(Some(&tree_store));
-
-    tree_store
 }
 
 fn render_tree_store(
     state: &ui::State,
     exec_nix_store_res: Arc<ExecNixStoreRes>,
 ) {
-    let tree_store = create_store(state);
+    // let tree_store = create_store(state);
 
-    render_nix_store_res(state, tree_store, exec_nix_store_res);
+    // render_nix_store_res(state, tree_store, exec_nix_store_res);
 }
 
-pub fn setup_tree_view(
-    state: &ui::State,
-    exec_nix_store_res_rc: Arc<ExecNixStoreRes>,
-) -> gtk::TreeView {
-    let tree_view: gtk::TreeView = state.get_tree_view();
+// pub fn setup_tree_view(
+//     state: &ui::State,
+//     exec_nix_store_res_rc: Arc<ExecNixStoreRes>,
+// ) -> gtk::TreeView {
+//     let tree_view: gtk::TreeView = state.get_tree_view();
 
-    columns::create(state);
+//     columns::create(state);
 
-    connect_signals(state, exec_nix_store_res_rc);
+//     connect_signals(state, exec_nix_store_res_rc);
 
-    tree_view
-}
+//     tree_view
+// }
 
 fn clear(tree_view: gtk::TreeView) {
     // let none_tree_model: Option<&gtk::TreeModel> = None;
@@ -239,14 +237,26 @@ fn render_nix_store_res(
     }
 }
 
-pub fn setup(state: &ui::State, exec_nix_store_res_rc: Arc<ExecNixStoreRes>) {
-    setup_tree_view(state, Arc::clone(&exec_nix_store_res_rc));
+pub fn setup(state: &ui::State) {
+    // setup_tree_view(state, Arc::clone(&exec_nix_store_res_rc));
 
-    render_tree_store(
-        state,
-        Arc::clone(&exec_nix_store_res_rc),
-    );
+    columns::setup(state);
+    setup_store(state);
 
-    // expand the first row of the tree view
-    state.get_tree_view().expand_row(&gtk::TreePath::new_first(), false);
+    // render_tree_store(
+    //     state,
+    //     Arc::clone(&exec_nix_store_res_rc),
+    // );
+}
+
+pub fn redisplay_data(state: &ui::State, exec_nix_store_res_rc: Arc<ExecNixStoreRes>) {
+    // setup_tree_view(state, Arc::clone(&exec_nix_store_res_rc));
+
+    // render_tree_store(
+    //     state,
+    //     Arc::clone(&exec_nix_store_res_rc),
+    // );
+
+    // // expand the first row of the tree view
+    // state.get_tree_view().expand_row(&gtk::TreePath::new_first(), false);
 }

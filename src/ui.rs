@@ -57,6 +57,10 @@ fn search_for(state: &State, nix_store_path: &Path) {
     }));
 }
 
+fn redisplay_data(state: &State, exec_nix_store_res: &ExecNixStoreRes) {
+    statusbar::show_msg(state, "about to redisplay...");
+}
+
 fn app_activate(app: gtk::Application) {
     let (sender, receiver) = glib::MainContext::channel(glib::source::PRIORITY_DEFAULT);
 
@@ -71,11 +75,15 @@ fn app_activate(app: gtk::Application) {
 
     stack::setup(&state);
 
-    menu::connect_signals(state);
+    menu::setup(&state);
 
     window.show_all();
 
-    receiver.attach(None, |Message::Display(exec_nix_store_res)| glib::source::Continue(true));
+    let state_clone = state.clone();
+    receiver.attach(None, move |Message::Display(exec_nix_store_res)| {
+        redisplay_data(&state_clone, &exec_nix_store_res);
+        glib::source::Continue(true)
+    });
 
     // Do the initial search and display the results.
     let opts = crate::opts::Opts::parse_from_args();

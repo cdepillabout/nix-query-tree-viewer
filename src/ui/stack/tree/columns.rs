@@ -50,7 +50,7 @@ fn get_tree_view_column_pos(
     }
 }
 
-fn create_item_column(state: &ui::State) {
+fn setup_item_column(state: &ui::State) {
     let renderer = gtk::CellRendererText::new();
 
     let column = state.get_tree_view_column_item();
@@ -60,7 +60,7 @@ fn create_item_column(state: &ui::State) {
     state.get_tree_view().append_column(&column);
 }
 
-fn create_link_column(state: &ui::State) {
+fn setup_link_column(state: &ui::State) {
     let renderer = gtk::CellRendererText::new();
     renderer.set_property_underline(pango::Underline::Single);
     renderer.set_property_foreground(Some("blue"));
@@ -72,7 +72,7 @@ fn create_link_column(state: &ui::State) {
     state.get_tree_view().append_column(&column);
 }
 
-pub fn create(state: &ui::State) {
-    create_item_column(state);
-    create_link_column(state);
+pub fn setup(state: &ui::State) {
+    setup_item_column(state);
+    setup_link_column(state);
 }

@@ -3,7 +3,7 @@ use super::prelude::*;
 
 use super::super::ui;
 
-pub fn connect_signals(state: ui::State) {
+fn connect_signals(state: &ui::State) {
     let about_menu_item: gtk::MenuItem = state.get_about_menu_item();
     let about_dialog: gtk::AboutDialog = state.get_about_dialog();
 
@@ -17,5 +17,9 @@ pub fn connect_signals(state: ui::State) {
     quit_menu_item.connect_activate(clone!(@weak state.app as app => move |_| {
         app.quit();
     }));
+}
+
+pub fn setup(state: &ui::State) {
+    connect_signals(state);
 }
 
