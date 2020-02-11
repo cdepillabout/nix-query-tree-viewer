@@ -1,165 +1,24 @@
-mod column;
+mod columns;
+mod path;
+mod store;
 
+use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
+use crate::nix_query_tree::{NixQueryEntry};
+use crate::nix_query_tree;
 use glib::clone;
-use std::collections::VecDeque;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::thread;
-
-use crate::nix_query_tree;
-use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
-use crate::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse};
-use crate::tree;
-use crate::tree::Tree;
-
 use super::super::prelude::*;
 use super::super::statusbar;
-use super::super::super::ui;
 use super::super::super::ui::state::{Message};
+use super::super::super::ui;
 
-use column::Column;
-
-fn insert_child_into_tree_store(
-    tree_store: gtk::TreeStore,
-    parent: Option<gtk::TreeIter>,
-    child: &Tree<NixQueryEntry>,
-) {
-    let Tree { item, children }: &Tree<NixQueryEntry> = child;
-    let drv: &NixQueryDrv = &item.0;
-    let drv_str = drv.to_string();
-    let recurse_str = if item.1 == Recurse::Yes {
-        "go to first instance"
-    } else {
-        ""
-    };
-    let this_iter: gtk::TreeIter = tree_store.insert_with_values(
-        parent.as_ref(),
-        None,
-        &column::INDICIES
-            .iter()
-            .map(|&i| i as u32)
-            .collect::<Vec<u32>>(),
-        &[&drv_str, &recurse_str],
-    );
-    insert_children_into_tree_store(tree_store, this_iter, children);
-}
-
-fn insert_children_into_tree_store(
-    tree_store: gtk::TreeStore,
-    parent: gtk::TreeIter,
-    children: &[Tree<NixQueryEntry>],
-) {
-    for child in children {
-        let _: &Tree<NixQueryEntry> = child;
-        insert_child_into_tree_store(tree_store.clone(), Some(parent.clone()), child)
-    }
-}
-
-pub fn insert_into_tree_store(tree_store: gtk::TreeStore, nix_store_res: &NixStoreRes) {
-    let nix_query_tree: &NixQueryTree = &nix_store_res.tree;
-    let tree: &Tree<NixQueryEntry> = &nix_query_tree.0;
-    insert_child_into_tree_store(tree_store, None, tree);
-}
-
-fn toggle_row(tree_view: gtk::TreeView, tree_path: gtk::TreePath, recurse: bool) {
+fn toggle_row_expanded(tree_view: gtk::TreeView, tree_path: gtk::TreePath, recurse: bool) {
     if tree_view.row_expanded(&tree_path) {
         tree_view.collapse_row(&tree_path);
     } else {
         tree_view.expand_row(&tree_path, recurse);
-    }
-}
-
-fn create_item_column(state: &ui::State) {
-    let renderer = gtk::CellRendererText::new();
-
-    let column = state.get_tree_view_column_item();
-    column.pack_start(&renderer, false);
-    column.add_attribute(&renderer, "text", Column::Item as i32);
-
-    state.get_tree_view().append_column(&column);
-}
-
-fn create_link_column(state: &ui::State) {
-    let renderer = gtk::CellRendererText::new();
-    renderer.set_property_underline(pango::Underline::Single);
-    renderer.set_property_foreground(Some("blue"));
-
-    let column = state.get_tree_view_column_repeat();
-    column.pack_end(&renderer, false);
-    column.add_attribute(&renderer, "text", Column::Recurse as i32);
-
-    state.get_tree_view().append_column(&column);
-}
-
-fn create_columns(state: &ui::State) {
-    create_item_column(state);
-    create_link_column(state);
-}
-
-fn gtk_tree_path_to_tree_path(gtk_tree_path: gtk::TreePath) -> tree::Path {
-    tree::Path(
-        gtk_tree_path
-            .get_indices()
-            .iter()
-            .map(|i| *i as usize)
-            // our tree::Path will only ever have one item at the root, so we can drop the first
-            // item from the gtk::TreePath.
-            .skip(1)
-            .collect::<VecDeque<usize>>(),
-    )
-}
-
-fn tree_path_to_gtk_tree_path(path: &tree::Path) -> gtk::TreePath {
-    let mut vec_indices: Vec<i32> = path.0.iter().map(|&u| u as i32).collect();
-    vec_indices.insert(0, 0);
-    let gtk_tree_path = gtk::TreePath::new_from_indicesv(&vec_indices);
-    gtk_tree_path
-}
-
-fn tree_view_go_to_path(tree_view: gtk::TreeView, first_path: &tree::Path) {
-    let first_gtk_path = tree_path_to_gtk_tree_path(first_path);
-    let col = tree_view.get_column(Column::Item as i32);
-
-    // Open recursively upward from this new path.
-    tree_view.expand_to_path(&first_gtk_path);
-
-    // Scroll to the newly opened path.
-    tree_view.scroll_to_cell(Some(&first_gtk_path), col.as_ref(), true, 0.5, 0.5);
-
-    let tree_selection: gtk::TreeSelection = tree_view.get_selection();
-    // Select the newly opened path.
-    tree_selection.select_path(&first_gtk_path);
-}
-
-fn nix_query_tree_lookup_gtk_path(
-    nix_query_tree: Arc<NixQueryTree>,
-    tree_path: gtk::TreePath,
-) -> Option<NixQueryEntry> {
-    let path = gtk_tree_path_to_tree_path(tree_path.clone());
-    nix_query_tree.lookup(path.clone()).cloned()
-}
-
-fn nix_store_res_lookup_gtk_path(
-    nix_store_res: Arc<NixStoreRes>,
-    tree_path: gtk::TreePath,
-) -> Option<NixQueryEntry> {
-    nix_query_tree_lookup_gtk_path(Arc::clone(&nix_store_res.tree), tree_path)
-}
-
-fn gtk_tree_path_is_for_recurse_column(
-    tree_view: gtk::TreeView,
-    tree_view_column: gtk::TreeViewColumn,
-    tree_path: gtk::TreePath,
-    nix_store_res_rc: Arc<NixStoreRes>,
-) -> Option<NixQueryEntry> {
-    let option_column = Column::from_gtk(tree_view.clone(), tree_view_column.clone());
-    let option_nix_query_entry_is_recurse =
-        nix_store_res_lookup_gtk_path(nix_store_res_rc, tree_path.clone())
-            .filter(|nix_query_entry| nix_query_entry.1 == Recurse::Yes);
-
-    match (option_column, option_nix_query_entry_is_recurse) {
-        (Some(Column::Recurse), Some(nix_query_entry)) => Some(nix_query_entry),
-        _ => None,
     }
 }
 
@@ -174,7 +33,7 @@ fn go_to_path_for_query_entry(
     match option_first_path {
         None => panic!("Nothing in our map for this drv.  This should hever happen."),
         Some(first_path) => {
-            tree_view_go_to_path(tree_view, &first_path);
+            path::goto(tree_view, &first_path);
         }
     }
 }
@@ -185,7 +44,7 @@ fn handle_row_activated(
     tree_view_column: gtk::TreeViewColumn,
     nix_store_res_rc: Arc<NixStoreRes>,
 ) {
-    match gtk_tree_path_is_for_recurse_column(
+    match path::is_for_recurse_column(
         tree_view.clone(),
         tree_view_column.clone(),
         tree_path.clone(),
@@ -196,7 +55,7 @@ fn handle_row_activated(
             Arc::clone(&nix_store_res_rc),
             &nix_query_entry,
         ),
-        _ => toggle_row(tree_view.clone(), tree_path.clone(), false),
+        _ => toggle_row_expanded(tree_view.clone(), tree_path.clone(), false),
     }
 }
 
@@ -255,7 +114,7 @@ fn handle_button_press_event(
         if let Some((Some(tree_path), Some(tree_view_column), _, _)) =
             tree_view.get_path_at_pos(x as i32, y as i32)
         {
-            if let Some(nix_query_entry) = gtk_tree_path_is_for_recurse_column(
+            if let Some(nix_query_entry) = path::is_for_recurse_column(
                 tree_view.clone(),
                 tree_view_column,
                 tree_path,
@@ -338,7 +197,7 @@ pub fn setup_tree_view(
 ) -> gtk::TreeView {
     let tree_view: gtk::TreeView = state.get_tree_view();
 
-    create_columns(state);
+    columns::create(state);
 
     connect_signals(state, exec_nix_store_res_rc);
 
@@ -376,7 +235,7 @@ fn render_nix_store_res(
     match &nix_store_res.res {
         // Err(err) => render_nix_store_err(builder, &nix_store_res.nix_store_path, err),
         Err(err) => (),
-        Ok(res) => insert_into_tree_store(tree_store, res),
+        Ok(res) => store::insert(tree_store, res),
     }
 }
 

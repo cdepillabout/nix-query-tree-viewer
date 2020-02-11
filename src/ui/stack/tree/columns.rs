@@ -1,6 +1,7 @@
 pub use std::convert::TryFrom;
 
 use super::super::super::prelude::*;
+use super::super::super::super::ui;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(i32)]
@@ -49,3 +50,29 @@ fn get_tree_view_column_pos(
     }
 }
 
+fn create_item_column(state: &ui::State) {
+    let renderer = gtk::CellRendererText::new();
+
+    let column = state.get_tree_view_column_item();
+    column.pack_start(&renderer, false);
+    column.add_attribute(&renderer, "text", Column::Item as i32);
+
+    state.get_tree_view().append_column(&column);
+}
+
+fn create_link_column(state: &ui::State) {
+    let renderer = gtk::CellRendererText::new();
+    renderer.set_property_underline(pango::Underline::Single);
+    renderer.set_property_foreground(Some("blue"));
+
+    let column = state.get_tree_view_column_repeat();
+    column.pack_end(&renderer, false);
+    column.add_attribute(&renderer, "text", Column::Recurse as i32);
+
+    state.get_tree_view().append_column(&column);
+}
+
+pub fn create(state: &ui::State) {
+    create_item_column(state);
+    create_link_column(state);
+}
