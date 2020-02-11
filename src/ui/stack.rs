@@ -7,7 +7,12 @@ use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes};
 
 use super::super::ui;
 
-pub fn setup(state: &ui::State, exec_nix_store_res_rc: Arc<ExecNixStoreRes>) {
-    tree::setup(&state, Arc::clone(&exec_nix_store_res_rc));
-    raw::setup(&state, exec_nix_store_res_rc);
+pub fn setup(state: &ui::State) {
+    tree::setup(&state);
+    raw::setup(&state);
+}
+
+pub fn redisplay_data(state: &ui::State, exec_nix_store_res_rc: Arc<ExecNixStoreRes>) {
+    tree::redisplay_data(&state, Arc::clone(&exec_nix_store_res_rc));
+    raw::redisplay_data(&state, exec_nix_store_res_rc);
 }

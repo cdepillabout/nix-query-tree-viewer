@@ -60,9 +60,9 @@ pub struct ExecNixStoreRes {
 }
 
 impl ExecNixStoreRes {
-    pub fn new(nix_store_path: PathBuf, res: Result<Arc<NixStoreRes>, NixStoreErr>) -> Self {
+    pub fn new(nix_store_path: &Path, res: Result<Arc<NixStoreRes>, NixStoreErr>) -> Self {
         ExecNixStoreRes {
-            nix_store_path,
+            nix_store_path: nix_store_path.to_path_buf(),
             res,
         }
     }
@@ -85,10 +85,10 @@ pub fn nix_store_res(nix_store_path: &Path) -> Result<Arc<NixStoreRes>, NixStore
     }
 }
 
-pub fn run(nix_store_path: PathBuf) -> ExecNixStoreRes {
+pub fn run(nix_store_path: &Path) -> ExecNixStoreRes {
     ExecNixStoreRes {
-        nix_store_path: nix_store_path.clone(),
-        res: nix_store_res(&nix_store_path),
+        nix_store_path: nix_store_path.to_path_buf(),
+        res: nix_store_res(nix_store_path),
     }
 }
 

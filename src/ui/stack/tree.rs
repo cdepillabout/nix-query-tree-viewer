@@ -73,14 +73,14 @@ fn handle_search_for_this_menu_item_activated(state: &ui::State) {
     thread::spawn(clone!(@strong sender => move || {
         let path_str: String = "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
         let path = PathBuf::from(path_str);
-        let exec_nix_store_res = nix_query_tree::exec_nix_store::run(path);
+        // let exec_nix_store_res = nix_query_tree::exec_nix_store::run(path);
         // TODO: Change this to use the channel!!
         // glib::source::idle_add(move || {
             // redisplay_after_search(builder, Arc::new(exec_nix_store_res));
             // glib::source::Continue(false)
         // });
 
-        sender.send(Message::Display(exec_nix_store_res));
+        // sender.send(Message::Display(exec_nix_store_res));
     }));
 
     // clear(tree_view.clone());
