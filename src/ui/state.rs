@@ -1,0 +1,57 @@
+use super::builder;
+use super::prelude::*;
+use super::super::nix_query_tree::exec_nix_store::{ExecNixStoreRes};
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Message {
+    Display(ExecNixStoreRes),
+}
+
+#[derive(Clone, Debug)]
+pub struct State {
+    pub app: gtk::Application,
+    pub builder: gtk::Builder,
+    pub sender: glib::Sender<Message>,
+}
+
+impl State {
+    pub fn new(app: gtk::Application, sender: glib::Sender<Message>) -> Self {
+        State {
+            app,
+            builder: builder::create(),
+            sender,
+        }
+    }
+
+    pub fn get_app_win(&self) -> gtk::ApplicationWindow {
+        self.builder.get_object_expect("appWindow")
+    }
+
+    pub fn get_about_menu_item(&self) -> gtk::MenuItem {
+        self.builder.get_object_expect("aboutMenuItem")
+    }
+
+    pub fn get_quit_menu_item(&self) -> gtk::MenuItem {
+        self.builder.get_object_expect("quitMenuItem")
+    }
+    
+    pub fn get_about_dialog(&self) -> gtk::AboutDialog {
+        self.builder.get_object_expect("aboutDialog")
+    }
+
+    pub fn get_error_dialog(&self) -> gtk::MessageDialog {
+        self.builder.get_object_expect("errorDialog")
+    }
+
+    pub fn get_raw_text_buffer(&self) -> gtk::TextBuffer {
+        self.builder.get_object_expect("rawTextBuffer")
+    }
+
+    pub fn get_statusbar(&self) -> gtk::Statusbar {
+        self.builder.get_object_expect("statusbar")
+    }
+
+    pub fn get_tree_view(&self) -> gtk::TreeView {
+        self.builder.get_object_expect("treeView")
+    }
+}

@@ -15,6 +15,7 @@ use crate::tree::Tree;
 use super::super::prelude::*;
 use super::super::statusbar;
 use super::super::super::ui;
+use super::super::super::ui::state::{Message};
 
 use column::Column;
 
@@ -68,7 +69,7 @@ fn toggle_row(tree_view: gtk::TreeView, tree_path: gtk::TreePath, recurse: bool)
     }
 }
 
-fn create_item_column(tree_view: gtk::TreeView) {
+fn create_item_column(state: &ui::State) {
     let renderer = gtk::CellRendererText::new();
 
     let column = gtk::TreeViewColumn::new();
@@ -76,10 +77,10 @@ fn create_item_column(tree_view: gtk::TreeView) {
     column.pack_start(&renderer, false);
     column.add_attribute(&renderer, "text", Column::Item as i32);
 
-    tree_view.append_column(&column);
+    state.get_tree_view().append_column(&column);
 }
 
-fn create_link_column(tree_view: gtk::TreeView) {
+fn create_link_column(state: &ui::State) {
     let renderer = gtk::CellRendererText::new();
     renderer.set_property_underline(pango::Underline::Single);
     renderer.set_property_foreground(Some("blue"));
@@ -89,12 +90,12 @@ fn create_link_column(tree_view: gtk::TreeView) {
     column.pack_end(&renderer, false);
     column.add_attribute(&renderer, "text", Column::Recurse as i32);
 
-    tree_view.append_column(&column);
+    state.get_tree_view().append_column(&column);
 }
 
-fn create_columns(tree_view: gtk::TreeView) {
-    create_item_column(tree_view.clone());
-    create_link_column(tree_view);
+fn create_columns(state: &ui::State) {
+    create_item_column(state);
+    create_link_column(state);
 }
 
 fn gtk_tree_path_to_tree_path(gtk_tree_path: gtk::TreePath) -> tree::Path {
@@ -205,35 +206,35 @@ fn redisplay_after_search(builder: gtk::Builder, exec_nix_store_res: Arc<ExecNix
     println!("Finished search...");
 }
 
-fn handle_search_for_this_menu_item_activated(state: &ui::State, tree_view: gtk::TreeView, exec_nix_store_res_rc: Arc<ExecNixStoreRes>) {
+fn handle_search_for_this_menu_item_activated(state: &ui::State) {
     disable(state);
     // TODO: actually put in the item we are searching for...
     statusbar::show_msg(state, "Searching for TODO...");
 
-    thread::spawn(move || {
+    let sender = &state.sender;
+
+    thread::spawn(clone!(@strong sender => move || {
         let path_str: String = "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
         let path = PathBuf::from(path_str);
         let exec_nix_store_res = nix_query_tree::exec_nix_store::run(path);
         // TODO: Change this to use the channel!!
-        glib::source::idle_add(move || {
-            redisplay_after_search(builder, Arc::new(exec_nix_store_res));
-            glib::source::Continue(false)
-        });
-    });
+        // glib::source::idle_add(move || {
+            // redisplay_after_search(builder, Arc::new(exec_nix_store_res));
+            // glib::source::Continue(false)
+        // });
+
+        sender.send(Message::Display(exec_nix_store_res));
+    }));
 
     // clear(tree_view.clone());
     // render_tree_store(builder.clone(), tree_view, Arc::clone(&exec_nix_store_res_rc));
 }
 
-fn create_search_for_this_menu_item(
-    state: &ui::State,
-    tree_view: gtk::TreeView,
-    exec_nix_store_res_rc: Arc<ExecNixStoreRes>,
-) -> gtk::MenuItem {
+fn create_search_for_this_menu_item(state: &ui::State) -> gtk::MenuItem {
     let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this");
 
-    search_for_this_menu_item.connect_activate(clone!(@weak tree_view, @strong state => move |_| {
-        handle_search_for_this_menu_item_activated(&state, tree_view, Arc::clone(&exec_nix_store_res_rc));
+    search_for_this_menu_item.connect_activate(clone!(@strong state => move |_| {
+        handle_search_for_this_menu_item_activated(&state);
     }));
 
     search_for_this_menu_item
@@ -249,16 +250,7 @@ fn handle_button_press_event(
         && event_button.get_button() == 3
     {
         let menu: gtk::Menu = gtk::Menu::new();
-        // TODO: this nix store exec thing is really hacky...
-        let exec_nix_store_res_rc = Arc::new(ExecNixStoreRes {
-            nix_store_path: PathBuf::from(""),
-            res: Ok(Arc::clone(&nix_store_res_rc)),
-        });
-        let search_for_this_menu_item = create_search_for_this_menu_item(
-            state,
-            tree_view.clone(),
-            exec_nix_store_res_rc,
-        );
+        let search_for_this_menu_item = create_search_for_this_menu_item(state);
         menu.append(&search_for_this_menu_item);
 
         let (x, y) = event_button.get_position();
@@ -350,7 +342,7 @@ pub fn setup_tree_view(
 ) -> gtk::TreeView {
     let tree_view: gtk::TreeView = state.get_tree_view();
 
-    create_columns(tree_view.clone());
+    create_columns(state);
 
     connect_signals(state, tree_view.clone(), exec_nix_store_res_rc);
 

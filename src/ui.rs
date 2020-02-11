@@ -1,10 +1,13 @@
 mod builder;
 mod css;
 mod menu;
-mod statusbar;
 mod stack;
+mod state;
+mod statusbar;
 
 pub mod prelude;
+
+pub use state::{Message, State};
 
 use std::path::Path;
 use std::sync::Arc;
@@ -13,59 +16,6 @@ use super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreErr};
 
 use prelude::*;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-enum Message {
-    Display(ExecNixStoreRes),
-}
-
-#[derive(Clone, Debug)]
-struct State {
-    app: gtk::Application,
-    builder: gtk::Builder,
-    sender: glib::Sender<Message>,
-}
-
-impl State {
-    fn new(app: gtk::Application, sender: glib::Sender<Message>) -> Self {
-        State {
-            app,
-            builder: builder::create(),
-            sender,
-        }
-    }
-
-    fn get_app_win(&self) -> gtk::ApplicationWindow {
-        self.builder.get_object_expect("appWindow")
-    }
-
-    fn get_about_menu_item(&self) -> gtk::MenuItem {
-        self.builder.get_object_expect("aboutMenuItem")
-    }
-
-    fn get_quit_menu_item(&self) -> gtk::MenuItem {
-        self.builder.get_object_expect("quitMenuItem")
-    }
-    
-    fn get_about_dialog(&self) -> gtk::AboutDialog {
-        self.builder.get_object_expect("aboutDialog")
-    }
-
-    fn get_error_dialog(&self) -> gtk::MessageDialog {
-        self.builder.get_object_expect("errorDialog")
-    }
-
-    fn get_raw_text_buffer(&self) -> gtk::TextBuffer {
-        self.builder.get_object_expect("rawTextBuffer")
-    }
-
-    fn get_statusbar(&self) -> gtk::Statusbar {
-        self.builder.get_object_expect("statusbar")
-    }
-
-    fn get_tree_view(&self) -> gtk::TreeView {
-        self.builder.get_object_expect("treeView")
-    }
-}
 
 fn render_nix_store_err(state: &State, nix_store_path: &Path, nix_store_err: &NixStoreErr) {
     let error_dialog: gtk::MessageDialog = state.get_error_dialog();
