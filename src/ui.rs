@@ -57,8 +57,10 @@ fn search_for(state: &State, nix_store_path: &Path) {
     }));
 }
 
-fn redisplay_data(state: &State, exec_nix_store_res: &ExecNixStoreRes) {
-    statusbar::show_msg(state, "about to redisplay...");
+fn redisplay_data(state: &State, exec_nix_store_res: ExecNixStoreRes) {
+    statusbar::clear(state);
+    let exec_nix_store_res_arc = Arc::new(exec_nix_store_res);
+    stack::redisplay_data(state, exec_nix_store_res_arc);
 }
 
 fn app_activate(app: gtk::Application) {
@@ -81,7 +83,7 @@ fn app_activate(app: gtk::Application) {
 
     let state_clone = state.clone();
     receiver.attach(None, move |Message::Display(exec_nix_store_res)| {
-        redisplay_data(&state_clone, &exec_nix_store_res);
+        redisplay_data(&state_clone, exec_nix_store_res);
         glib::source::Continue(true)
     });
 

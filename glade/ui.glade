@@ -136,6 +136,9 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="treeViewColumnItem">
                         <property name="title" translatable="yes">item</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellRendererTextItem"/>
+                        </child>
                       </object>
                     </child>
                     <child>
