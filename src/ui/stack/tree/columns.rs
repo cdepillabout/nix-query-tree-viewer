@@ -52,21 +52,13 @@ fn get_tree_view_column_pos(
 
 fn setup_item_column(state: &ui::State) {
     let renderer = state.get_cell_renderer_text_item();
-    // let renderer = gtk::CellRendererText::new();
-
     let column = state.get_tree_view_column_item();
-    // column.pack_start(&renderer, false);
     column.add_attribute(&renderer, "text", Column::Item as i32);
 }
 
 fn setup_link_column(state: &ui::State) {
-    // TODO: Use the cell renderer here as well.
-    let renderer = gtk::CellRendererText::new();
-    renderer.set_property_underline(pango::Underline::Single);
-    renderer.set_property_foreground(Some("blue"));
-
+    let renderer = state.get_cell_renderer_text_repeat();
     let column = state.get_tree_view_column_repeat();
-    column.pack_end(&renderer, false);
     column.add_attribute(&renderer, "text", Column::Recurse as i32);
 }
 

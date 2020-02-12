@@ -144,6 +144,12 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="treeViewColumnRepeat">
                         <property name="title" translatable="yes">repeat</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellRendererTextRepeat">
+                            <property name="foreground">blue</property>
+                            <property name="underline">single</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <style>

@@ -66,4 +66,8 @@ impl State {
     pub fn get_cell_renderer_text_item(&self) -> gtk::CellRendererText {
         self.builder.get_object_expect("cellRendererTextItem")
     }
+
+    pub fn get_cell_renderer_text_repeat(&self) -> gtk::CellRendererText {
+        self.builder.get_object_expect("cellRendererTextRepeat")
+    }
 }
