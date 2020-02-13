@@ -35,9 +35,14 @@ fn clear(state: &ui::State) {
     }
 }
 
-fn disable(state: &ui::State) {
+pub fn disable(state: &ui::State) {
     let tree_view: gtk::TreeView = state.get_tree_view();
     tree_view.set_sensitive(false);
+}
+
+pub fn enable(state: &ui::State) {
+    let tree_view: gtk::TreeView = state.get_tree_view();
+    tree_view.set_sensitive(true);
 }
 
 fn render_nix_store_res(
@@ -58,6 +63,7 @@ pub fn setup(state: &ui::State) {
 
 pub fn redisplay_data(state: &ui::State, exec_nix_store_res_arc: Arc<ExecNixStoreRes>) {
     clear(state);
+    enable(state);
     let tree_store = setup_store(state);
 
     render_nix_store_res(state, tree_store, Arc::clone(&exec_nix_store_res_arc));

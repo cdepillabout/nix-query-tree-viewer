@@ -1,14 +1,16 @@
 use glib::clone;
-use std::path::PathBuf;
+use std::path::Path;
 use std::sync::Arc;
 use std::thread;
 
+use crate::nix_query_tree;
 use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
 use crate::nix_query_tree::{NixQueryEntry};
 use super::path;
 use super::statusbar;
 use super::super::tree;
 use super::super::super::prelude::*;
+use super::super::super::stack;
 use super::super::super::super::ui;
 
 fn toggle_row_expanded(tree_view: gtk::TreeView, tree_path: gtk::TreePath, recurse: bool) {
@@ -57,23 +59,9 @@ fn handle_row_activated(
 }
 
 fn handle_search_for_this_menu_item_activated(state: &ui::State) {
-    tree::disable(state);
-    // TODO: actually put in the item we are searching for...
-    statusbar::show_msg(state, "Searching for TODO...");
+    stack::disable(state);
 
-    let sender = &state.sender;
-
-    thread::spawn(clone!(@strong sender => move || {
-        let path_str: String = "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
-        let path = PathBuf::from(path_str);
-        // let exec_nix_store_res = nix_query_tree::exec_nix_store::run(path);
-        // TODO: Change this to use the channel!!
-        // glib::source::idle_add(move || {
-            // glib::source::Continue(false)
-        // });
-
-        // sender.send(Message::Display(exec_nix_store_res));
-    }));
+    ui::search_for(state, Path::new("/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10"));
 }
 
 fn create_search_for_this_menu_item(state: &ui::State) -> gtk::MenuItem {
@@ -151,6 +139,7 @@ pub fn connect(
         let nix_store_res_rc_cloned: Arc<NixStoreRes> = Arc::clone(nix_store_res_rc);
         state.get_tree_view().connect_button_press_event(
             clone!(@strong state => move |tree_view_ref, event_button| {
+                println!("calling button press event...");
                 handle_button_press_event(
                     &state,
                     tree_view_ref.clone(),
