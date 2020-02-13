@@ -1,5 +1,4 @@
 use glib::clone;
-use std::path::Path;
 
 use super::super::super::super::ui;
 use super::super::super::prelude::*;

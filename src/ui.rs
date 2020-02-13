@@ -22,6 +22,14 @@ fn render_nix_store_err(
     nix_store_path: &Path,
     nix_store_err: &NixStoreErr,
 ) {
+    statusbar::show_msg(
+        state,
+        &format!(
+            "Error running `nix-store --query --tree {}`",
+            nix_store_path.to_string_lossy()
+        ),
+    );
+
     let error_dialog: gtk::MessageDialog = state.get_error_dialog();
     let error_msg = &format!(
         "Error running `nix-store --query --tree {}`:\n\n{}",
@@ -30,14 +38,7 @@ fn render_nix_store_err(
     );
     error_dialog.set_property_secondary_text(Some(error_msg));
     error_dialog.run();
-    error_dialog.destroy();
-    statusbar::show_msg(
-        state,
-        &format!(
-            "Error running `nix-store --query --tree {}`",
-            nix_store_path.to_string_lossy()
-        ),
-    );
+    error_dialog.hide();
 }
 
 fn search_for(state: &State, nix_store_path: &Path) {
@@ -51,8 +52,12 @@ fn search_for(state: &State, nix_store_path: &Path) {
 
     let nix_store_path_buf = nix_store_path.to_path_buf();
     thread::spawn(clone!(@strong state.sender as sender => move || {
-        let exec_nix_store_res = super::nix_query_tree::exec_nix_store::run(&nix_store_path_buf);
-        sender.send(Message::Display(exec_nix_store_res));
+        let exec_nix_store_res =
+            super::nix_query_tree::exec_nix_store::run(&nix_store_path_buf);
+
+        sender
+            .send(Message::Display(exec_nix_store_res))
+            .expect("sender is already closed.  This should never happen");
     }));
 }
 
@@ -64,7 +69,14 @@ fn redisplay_data(state: &State) {
 fn handle_msg_recv(state: &State, msg: Message) {
     match msg {
         Message::Display(exec_nix_store_res) => match exec_nix_store_res.res {
-            Err(_) => todo!(),
+            Err(nix_store_err) => {
+                render_nix_store_err(
+                    state,
+                    &exec_nix_store_res.nix_store_path,
+                    &nix_store_err,
+                );
+                stack::enable(state);
+            }
             Ok(nix_store_res) => {
                 *state.nix_store_res.lock().unwrap() = Some(nix_store_res);
                 redisplay_data(state);
