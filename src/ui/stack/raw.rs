@@ -1,18 +1,14 @@
 
-use std::sync::Arc;
-
-use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
-
 use super::super::prelude::*;
 use super::super::super::ui;
 
-pub fn setup(state: &ui::State) {
+pub fn setup(_state: &ui::State) {
 }
 
-pub fn disable(state: &ui::State) {
+pub fn disable(_state: &ui::State) {
 }
 
-pub fn enable(state: &ui::State) {
+pub fn enable(_state: &ui::State) {
 }
 
 pub fn redisplay_data(state: &ui::State) {

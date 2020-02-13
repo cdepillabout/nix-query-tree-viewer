@@ -3,7 +3,6 @@ use crate::nix_query_tree::{NixQueryEntry, NixQueryTree, Recurse};
 use crate::nix_query_tree::exec_nix_store::{NixStoreRes};
 use crate::tree;
 use std::collections::VecDeque;
-use std::sync::Arc;
 use super::columns::Column;
 use super::super::super::prelude::*;
 

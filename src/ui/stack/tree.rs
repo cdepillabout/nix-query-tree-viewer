@@ -3,10 +3,7 @@ mod path;
 mod signals;
 mod store;
 
-use crate::nix_query_tree::exec_nix_store::ExecNixStoreRes;
-use std::sync::Arc;
 use super::super::prelude::*;
-use super::super::statusbar;
 use super::super::super::ui;
 
 fn setup_store(state: &ui::State) -> gtk::TreeStore {

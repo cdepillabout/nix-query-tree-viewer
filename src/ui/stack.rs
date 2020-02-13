@@ -1,10 +1,6 @@
 mod raw;
 mod tree;
 
-use std::sync::Arc;
-
-use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes};
-
 use super::super::ui;
 
 pub fn setup(state: &ui::State) {

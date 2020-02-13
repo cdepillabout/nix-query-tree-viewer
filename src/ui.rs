@@ -10,14 +10,12 @@ pub mod prelude;
 pub use state::{Message, State};
 
 use glib::clone;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::path::{Path};
 use std::thread;
 
-use super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreErr};
+use super::nix_query_tree::exec_nix_store::{NixStoreErr};
 
 use prelude::*;
-
 
 fn render_nix_store_err(state: &State, nix_store_path: &Path, nix_store_err: &NixStoreErr) {
     let error_dialog: gtk::MessageDialog = state.get_error_dialog();
@@ -79,8 +77,6 @@ fn app_activate(app: gtk::Application) {
     window.set_application(Some(&state.app));
 
     css::setup(window.clone().upcast());
-
-    // let exec_nix_store_res = Arc::new(exec_nix_store_res);
 
     stack::setup(&state);
 

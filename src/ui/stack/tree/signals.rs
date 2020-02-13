@@ -1,14 +1,9 @@
 use glib::clone;
 use std::path::Path;
-use std::sync::Arc;
-use std::thread;
 
-use crate::nix_query_tree;
-use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
+use crate::nix_query_tree::exec_nix_store::{NixStoreRes};
 use crate::nix_query_tree::{NixQueryEntry};
 use super::path;
-use super::statusbar;
-use super::super::tree;
 use super::super::super::prelude::*;
 use super::super::super::stack;
 use super::super::super::super::ui;
@@ -151,4 +146,3 @@ pub fn connect(state: &ui::State) {
         })
     );
 }
-
