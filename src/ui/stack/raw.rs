@@ -1,7 +1,7 @@
 
 use std::sync::Arc;
 
-use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes};
+use crate::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
 
 use super::super::prelude::*;
 use super::super::super::ui;
@@ -15,17 +15,17 @@ pub fn disable(state: &ui::State) {
 pub fn enable(state: &ui::State) {
 }
 
-pub fn redisplay_data(state: &ui::State, exec_nix_store_res: Arc<ExecNixStoreRes>) {
+pub fn redisplay_data(state: &ui::State) {
     enable(state);
 
-    let text_buffer: gtk::TextBuffer = state.get_raw_text_buffer();
+    if let Some(nix_store_res) = &*state.nix_store_res.lock().unwrap() {
+        let text_buffer: gtk::TextBuffer = state.get_raw_text_buffer();
+        text_buffer.set_text(&nix_store_res.raw);
+    }
 
-    // TODO: This is super ugly.  Why do I have to clone the string in the Ok arm of the match when
-    // I just call text_buffer.set_text() on the reference?
-    let text: String = match &exec_nix_store_res.res {
-        Err(nix_store_err) => nix_store_err.to_string(),
-        Ok(nix_store_res_rc) => String::clone(&nix_store_res_rc.raw),
-    };
-
-    text_buffer.set_text(&text);
+    // if let Some(raw) = &state.nix_store_res {
+    //     let text_buffer: gtk::TextBuffer = state.get_raw_text_buffer();
+    //     let text: &str = raw;
+    //     text_buffer.set_text(&text);
+    // }
 }

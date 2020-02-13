@@ -126,7 +126,8 @@ pub fn connect(
     // Only connect signals to the tree when we successfully ran
     // nix-store.
     if let Ok(nix_store_res_rc) = &exec_nix_store_res.res {
-        let nix_store_res_rc_cloned: Arc<NixStoreRes> = Arc::clone(nix_store_res_rc);
+        // TODO: This shouldn't be using Arc here...
+        let nix_store_res_rc_cloned: Arc<NixStoreRes> = Arc::new(nix_store_res_rc.clone());
         state.get_tree_view().connect_row_activated(move |tree_view_ref, tree_path, tree_view_column| {
             handle_row_activated(
                 tree_view_ref.clone(),
@@ -136,7 +137,7 @@ pub fn connect(
             );
         });
 
-        let nix_store_res_rc_cloned: Arc<NixStoreRes> = Arc::clone(nix_store_res_rc);
+        let nix_store_res_rc_cloned: Arc<NixStoreRes> = Arc::new(nix_store_res_rc.clone());
         state.get_tree_view().connect_button_press_event(
             clone!(@strong state => move |tree_view_ref, event_button| {
                 println!("calling button press event...");

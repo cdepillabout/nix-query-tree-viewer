@@ -51,16 +51,21 @@ fn search_for(state: &State, nix_store_path: &Path) {
     }));
 }
 
-fn redisplay_data(state: &State, exec_nix_store_res: ExecNixStoreRes) {
+fn redisplay_data(state: &State) {
     statusbar::clear(state);
-    let exec_nix_store_res_arc = Arc::new(exec_nix_store_res);
-    stack::redisplay_data(state, exec_nix_store_res_arc);
+    stack::redisplay_data(state);
 }
 
 fn handle_msg_recv(state: &State, msg: Message) {
     match msg {
         Message::Display(exec_nix_store_res) => {
-            redisplay_data(state, exec_nix_store_res);
+            match exec_nix_store_res.res {
+                Err(_) => todo!(),
+                Ok(nix_store_res) => {
+                    *state.nix_store_res.lock().unwrap() = Some(nix_store_res);
+                    redisplay_data(state);
+                },
+            }
         }
     }
 }

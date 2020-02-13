@@ -22,7 +22,7 @@ pub fn enable(state: &ui::State) {
     raw::enable(state);
 }
 
-pub fn redisplay_data(state: &ui::State, exec_nix_store_res_rc: Arc<ExecNixStoreRes>) {
-    tree::redisplay_data(&state, Arc::clone(&exec_nix_store_res_rc));
-    raw::redisplay_data(&state, exec_nix_store_res_rc);
+pub fn redisplay_data(state: &ui::State) {
+    // tree::redisplay_data(&state, Arc::clone(&exec_nix_store_res_rc));
+    raw::redisplay_data(&state);
 }
