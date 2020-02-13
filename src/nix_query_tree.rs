@@ -14,6 +14,12 @@ impl From<&str> for NixQueryDrv {
     }
 }
 
+impl NixQueryDrv {
+    pub fn path(&self) -> &std::path::Path {
+        &self.0
+    }
+}
+
 impl FromStr for NixQueryDrv {
     type Err = ();
 
@@ -36,6 +42,12 @@ pub enum Recurse {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct NixQueryEntry(pub NixQueryDrv, pub Recurse);
+
+impl NixQueryEntry {
+    pub fn path(&self) -> &std::path::Path {
+        self.0.path()
+    }
+}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NixQueryTree(pub Tree<NixQueryEntry>);
