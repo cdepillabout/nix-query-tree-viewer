@@ -1,5 +1,5 @@
-use glib::clone;
 use super::prelude::*;
+use glib::clone;
 
 use super::super::ui;
 
@@ -22,4 +22,3 @@ fn connect_signals(state: &ui::State) {
 pub fn setup(state: &ui::State) {
     connect_signals(state);
 }
-

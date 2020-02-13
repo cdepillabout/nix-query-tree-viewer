@@ -42,14 +42,8 @@ impl NixStoreRes {
         }
     }
 
-    pub fn lookup_first_query_entry(
-        &self,
-        nix_query_entry: &NixQueryEntry,
-    ) -> Option<tree::Path> {
-        self
-            .map
-            .lookup_first(&nix_query_entry.0)
-            .cloned()
+    pub fn lookup_first_query_entry(&self, nix_query_entry: &NixQueryEntry) -> Option<tree::Path> {
+        self.map.lookup_first(&nix_query_entry.0).cloned()
     }
 }
 

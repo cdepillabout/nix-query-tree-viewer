@@ -1,10 +1,9 @@
-
+use crate::nix_query_tree::exec_nix_store::NixStoreRes;
 use crate::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse};
-use crate::nix_query_tree::exec_nix_store::{NixStoreRes};
 use crate::tree::Tree;
 
-use super::columns;
 use super::super::super::prelude::*;
+use super::columns;
 
 fn insert_child(
     tree_store: gtk::TreeStore,
@@ -47,4 +46,3 @@ pub fn insert(tree_store: gtk::TreeStore, nix_store_res: &NixStoreRes) {
     let tree: &Tree<NixQueryEntry> = &nix_query_tree.0;
     insert_child(tree_store, None, tree);
 }
-

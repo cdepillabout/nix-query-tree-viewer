@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
+use super::super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
 use super::builder;
 use super::prelude::*;
-use super::super::nix_query_tree::exec_nix_store::{NixStoreRes, ExecNixStoreRes};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Message {
@@ -38,7 +38,7 @@ impl State {
     pub fn get_quit_menu_item(&self) -> gtk::MenuItem {
         self.builder.get_object_expect("quitMenuItem")
     }
-    
+
     pub fn get_about_dialog(&self) -> gtk::AboutDialog {
         self.builder.get_object_expect("aboutDialog")
     }

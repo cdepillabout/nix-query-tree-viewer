@@ -10,10 +10,10 @@ pub mod prelude;
 pub use state::{Message, State};
 
 use glib::clone;
-use std::path::{Path};
+use std::path::Path;
 use std::thread;
 
-use super::nix_query_tree::exec_nix_store::{NixStoreErr};
+use super::nix_query_tree::exec_nix_store::NixStoreErr;
 
 use prelude::*;
 
@@ -40,7 +40,10 @@ fn search_for(state: &State, nix_store_path: &Path) {
     // nix-store --query --tree /nix/store/jymg0kanmlgbcv35wxd8d660rw0fawhv-hello-2.10.drv
     // nix-store --query --tree /nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
 
-    statusbar::show_msg(state, &format!("Searching for {}...", nix_store_path.display()));
+    statusbar::show_msg(
+        state,
+        &format!("Searching for {}...", nix_store_path.display()),
+    );
 
     let nix_store_path_buf = nix_store_path.to_path_buf();
     thread::spawn(clone!(@strong state.sender as sender => move || {
@@ -56,15 +59,13 @@ fn redisplay_data(state: &State) {
 
 fn handle_msg_recv(state: &State, msg: Message) {
     match msg {
-        Message::Display(exec_nix_store_res) => {
-            match exec_nix_store_res.res {
-                Err(_) => todo!(),
-                Ok(nix_store_res) => {
-                    *state.nix_store_res.lock().unwrap() = Some(nix_store_res);
-                    redisplay_data(state);
-                },
+        Message::Display(exec_nix_store_res) => match exec_nix_store_res.res {
+            Err(_) => todo!(),
+            Ok(nix_store_res) => {
+                *state.nix_store_res.lock().unwrap() = Some(nix_store_res);
+                redisplay_data(state);
             }
-        }
+        },
     }
 }
 

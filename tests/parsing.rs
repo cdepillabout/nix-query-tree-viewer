@@ -2,8 +2,8 @@ extern crate nix_query_tree_viewer;
 
 use indoc::indoc;
 
-use nix_query_tree_viewer::nix_query_tree::*;
 use nix_query_tree_viewer::nix_query_tree::parsing::*;
+use nix_query_tree_viewer::nix_query_tree::*;
 use nix_query_tree_viewer::tree::*;
 
 #[test]

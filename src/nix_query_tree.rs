@@ -1,5 +1,5 @@
-pub mod parsing;
 pub mod exec_nix_store;
+pub mod parsing;
 
 use super::tree::{Path, Tree, TreePathMap};
 use std::path::PathBuf;

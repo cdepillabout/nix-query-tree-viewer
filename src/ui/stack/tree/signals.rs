@@ -62,10 +62,7 @@ fn handle_row_activated(
 fn handle_search_for_this_menu_item_activated(state: &ui::State, nix_query_entry: &NixQueryEntry) {
     stack::disable(state);
 
-    ui::search_for(
-        state,
-        &nix_query_entry.path()
-    );
+    ui::search_for(state, &nix_query_entry.path());
 }
 
 fn create_search_for_this_menu_item(
@@ -80,9 +77,11 @@ fn create_search_for_this_menu_item(
     {
         let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this");
 
-        search_for_this_menu_item.connect_activate(clone!(@strong state, @strong nix_query_entry => move |_| {
-            handle_search_for_this_menu_item_activated(&state, &nix_query_entry);
-        }));
+        search_for_this_menu_item.connect_activate(
+            clone!(@strong state, @strong nix_query_entry => move |_| {
+                handle_search_for_this_menu_item_activated(&state, &nix_query_entry);
+            }),
+        );
 
         menu.append(&search_for_this_menu_item);
     }

@@ -1,7 +1,7 @@
 pub use std::convert::TryFrom;
 
-use super::super::super::prelude::*;
 use super::super::super::super::ui;
+use super::super::super::prelude::*;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(i32)]
@@ -19,7 +19,8 @@ impl Column {
         tree_view: gtk::TreeView,
         tree_view_column: gtk::TreeViewColumn,
     ) -> Option<Column> {
-        let column_pos: usize = get_tree_view_column_pos(tree_view.clone(), tree_view_column.clone());
+        let column_pos: usize =
+            get_tree_view_column_pos(tree_view.clone(), tree_view_column.clone());
         Column::try_from(column_pos).ok()
     }
 }

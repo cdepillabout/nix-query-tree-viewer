@@ -25,17 +25,18 @@ impl<T> Tree<T> {
             },
         }
     }
-
 }
 
-impl<T> Tree<T> where
+impl<T> Tree<T>
+where
     T: Clone,
 {
     pub fn append(&mut self, new_child_tree: Tree<T>) {
         self.children.push(new_child_tree);
     }
 
-    pub fn path_map_map<U>(&self, f: &dyn Fn(T) -> U) -> TreePathMap<U> where
+    pub fn path_map_map<U>(&self, f: &dyn Fn(T) -> U) -> TreePathMap<U>
+    where
         U: Eq + Hash,
     {
         let mut map = TreePathMap::new();
@@ -46,11 +47,11 @@ impl<T> Tree<T> where
     }
 }
 
-impl<T> Tree<T> where
+impl<T> Tree<T>
+where
     T: Clone + Eq + Hash,
 {
-    pub fn path_map(&self) -> TreePathMap<T>
-    {
+    pub fn path_map(&self) -> TreePathMap<T> {
         self.path_map_map(&std::convert::identity)
     }
 }
@@ -90,7 +91,8 @@ pub struct TreePathMap<T>(HashMap<T, Vec<Path>>)
 where
     T: Eq + Hash;
 
-impl<T> TreePathMap<T> where
+impl<T> TreePathMap<T>
+where
     T: Eq + Hash,
 {
     pub fn new() -> TreePathMap<T> {
@@ -116,7 +118,6 @@ impl<T> TreePathMap<T> where
         let option_paths: Option<&Vec<Path>> = self.0.get(k);
         option_paths.and_then(|vec: &Vec<Path>| vec.first())
     }
-
 }
 
 impl<T> TreePathMap<T>
@@ -136,7 +137,8 @@ where
 {
     // TODO: How to write insert_children_own and insert_children
     // in one function.  Polymorphism over ownership/references??
-    fn insert_children_map<U>(&mut self, children: &[Tree<U>], path: Path, f: &dyn Fn(U) -> T) where
+    fn insert_children_map<U>(&mut self, children: &[Tree<U>], path: Path, f: &dyn Fn(U) -> T)
+    where
         U: Clone,
     {
         for (i, child) in children.iter().enumerate() {

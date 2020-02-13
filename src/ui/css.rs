@@ -21,4 +21,3 @@ pub fn setup(window: gtk::Window) {
         }
     }
 }
-

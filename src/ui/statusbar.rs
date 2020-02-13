@@ -1,6 +1,5 @@
-
-use super::prelude::*;
 use super::super::ui;
+use super::prelude::*;
 
 pub fn clear(state: &ui::State) {
     show_msg(state, "");
@@ -11,4 +10,3 @@ pub fn show_msg(state: &ui::State, msg: &str) {
     statusbar.remove_all(0);
     statusbar.push(0, msg);
 }
-

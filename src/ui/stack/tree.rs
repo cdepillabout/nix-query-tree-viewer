@@ -3,8 +3,8 @@ mod path;
 mod signals;
 mod store;
 
-use super::super::prelude::*;
 use super::super::super::ui;
+use super::super::prelude::*;
 
 fn setup_store(state: &ui::State) -> gtk::TreeStore {
     let tree_store: gtk::TreeStore =
@@ -42,10 +42,7 @@ pub fn enable(state: &ui::State) {
     tree_view.set_sensitive(true);
 }
 
-fn render_nix_store_res(
-    state: &ui::State,
-    tree_store: gtk::TreeStore,
-) {
+fn render_nix_store_res(state: &ui::State, tree_store: gtk::TreeStore) {
     if let Some(res) = &*state.nix_store_res.lock().unwrap() {
         store::insert(tree_store, res);
     }
@@ -65,5 +62,7 @@ pub fn redisplay_data(state: &ui::State) {
     render_nix_store_res(state, tree_store);
 
     // expand the first row of the tree view
-    state.get_tree_view().expand_row(&gtk::TreePath::new_first(), false);
+    state
+        .get_tree_view()
+        .expand_row(&gtk::TreePath::new_first(), false);
 }
