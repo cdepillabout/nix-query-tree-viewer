@@ -42,17 +42,11 @@ fn search_for(state: &State, nix_store_path: &Path) {
     // nix-store --query --tree /nix/store/jymg0kanmlgbcv35wxd8d660rw0fawhv-hello-2.10.drv
     // nix-store --query --tree /nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
 
-    statusbar::show_msg(&state, &format!("Searching for {}...", nix_store_path.display()));
+    statusbar::show_msg(state, &format!("Searching for {}...", nix_store_path.display()));
 
     let nix_store_path_buf = nix_store_path.to_path_buf();
     thread::spawn(clone!(@strong state.sender as sender => move || {
         let exec_nix_store_res = super::nix_query_tree::exec_nix_store::run(&nix_store_path_buf);
-        // TODO: Change this to use the channel!!
-        // glib::source::idle_add(move || {
-            // redisplay_after_search(builder, Arc::new(exec_nix_store_res));
-            // glib::source::Continue(false)
-        // });
-
         sender.send(Message::Display(exec_nix_store_res));
     }));
 }
@@ -61,6 +55,14 @@ fn redisplay_data(state: &State, exec_nix_store_res: ExecNixStoreRes) {
     statusbar::clear(state);
     let exec_nix_store_res_arc = Arc::new(exec_nix_store_res);
     stack::redisplay_data(state, exec_nix_store_res_arc);
+}
+
+fn handle_msg_recv(state: &State, msg: Message) {
+    match msg {
+        Message::Display(exec_nix_store_res) => {
+            redisplay_data(state, exec_nix_store_res);
+        }
+    }
 }
 
 fn app_activate(app: gtk::Application) {
@@ -82,8 +84,8 @@ fn app_activate(app: gtk::Application) {
     window.show_all();
 
     let state_clone = state.clone();
-    receiver.attach(None, move |Message::Display(exec_nix_store_res)| {
-        redisplay_data(&state_clone, exec_nix_store_res);
+    receiver.attach(None, move |msg| {
+        handle_msg_recv(&state_clone, msg);
         glib::source::Continue(true)
     });
 

@@ -1,6 +1,8 @@
+use std::sync::{Arc, Mutex};
+
 use super::builder;
 use super::prelude::*;
-use super::super::nix_query_tree::exec_nix_store::{ExecNixStoreRes};
+use super::super::nix_query_tree::exec_nix_store::{NixStoreRes, ExecNixStoreRes};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Message {
@@ -12,6 +14,7 @@ pub struct State {
     pub app: gtk::Application,
     pub builder: gtk::Builder,
     pub sender: glib::Sender<Message>,
+    pub nix_store_res: Arc<Mutex<Option<NixStoreRes>>>,
 }
 
 impl State {
@@ -20,6 +23,7 @@ impl State {
             app,
             builder: builder::create(),
             sender,
+            nix_store_res: Arc::new(Mutex::new(None)),
         }
     }
 
