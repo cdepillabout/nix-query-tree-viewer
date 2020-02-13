@@ -18,9 +18,10 @@ pub fn connect_signals(state: &ui::State) {
         }),
     );
 
-    state.get_search_button().connect_activate(
-        clone!(@strong state => move |_| {
+    state.get_search_button().connect_button_press_event(
+        clone!(@strong state => move |_, _| {
             handle_search(&state);
+            Inhibit(false)
         }),
     );
 }
