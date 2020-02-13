@@ -43,7 +43,7 @@ pub fn goto(tree_view: gtk::TreeView, first_path: &tree::Path) {
 }
 
 fn nix_query_tree_lookup_gtk_path(
-    nix_query_tree: Arc<NixQueryTree>,
+    nix_query_tree: &NixQueryTree,
     tree_path: gtk::TreePath,
 ) -> Option<NixQueryEntry> {
     let path = gtk_tree_path_to_tree_path(tree_path.clone());
@@ -51,17 +51,17 @@ fn nix_query_tree_lookup_gtk_path(
 }
 
 fn nix_store_res_lookup_gtk_path(
-    nix_store_res: Arc<NixStoreRes>,
+    nix_store_res: &NixStoreRes,
     tree_path: gtk::TreePath,
 ) -> Option<NixQueryEntry> {
-    nix_query_tree_lookup_gtk_path(Arc::clone(&nix_store_res.tree), tree_path)
+    nix_query_tree_lookup_gtk_path(&nix_store_res.tree, tree_path)
 }
 
 pub fn is_for_recurse_column(
     tree_view: gtk::TreeView,
     tree_view_column: gtk::TreeViewColumn,
     tree_path: gtk::TreePath,
-    nix_store_res_rc: Arc<NixStoreRes>,
+    nix_store_res_rc: &NixStoreRes,
 ) -> Option<NixQueryEntry> {
     let option_column = Column::from_gtk(tree_view.clone(), tree_view_column.clone());
     let option_nix_query_entry_is_recurse =

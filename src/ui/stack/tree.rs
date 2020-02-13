@@ -46,30 +46,27 @@ pub fn enable(state: &ui::State) {
 }
 
 fn render_nix_store_res(
-    _state: &ui::State,
+    state: &ui::State,
     tree_store: gtk::TreeStore,
-    nix_store_res: Arc<ExecNixStoreRes>,
 ) {
-    match &nix_store_res.res {
-        // Err(err) => render_nix_store_err(builder, &nix_store_res.nix_store_path, err),
-        Err(err) => (),
-        Ok(res) => store::insert(tree_store, res),
+    if let Some(res) = &*state.nix_store_res.lock().unwrap() {
+        store::insert(tree_store, res);
     }
 }
 
 pub fn setup(state: &ui::State) {
     columns::setup(state);
+
+    signals::connect(state);
 }
 
-pub fn redisplay_data(state: &ui::State, exec_nix_store_res_arc: Arc<ExecNixStoreRes>) {
+pub fn redisplay_data(state: &ui::State) {
     clear(state);
     enable(state);
     let tree_store = setup_store(state);
 
-    render_nix_store_res(state, tree_store, Arc::clone(&exec_nix_store_res_arc));
+    render_nix_store_res(state, tree_store);
 
     // expand the first row of the tree view
     state.get_tree_view().expand_row(&gtk::TreePath::new_first(), false);
-
-    signals::connect(state, exec_nix_store_res_arc);
 }

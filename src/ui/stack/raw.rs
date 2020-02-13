@@ -22,10 +22,4 @@ pub fn redisplay_data(state: &ui::State) {
         let text_buffer: gtk::TextBuffer = state.get_raw_text_buffer();
         text_buffer.set_text(&nix_store_res.raw);
     }
-
-    // if let Some(raw) = &state.nix_store_res {
-    //     let text_buffer: gtk::TextBuffer = state.get_raw_text_buffer();
-    //     let text: &str = raw;
-    //     text_buffer.set_text(&text);
-    // }
 }

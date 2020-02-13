@@ -23,6 +23,6 @@ pub fn enable(state: &ui::State) {
 }
 
 pub fn redisplay_data(state: &ui::State) {
-    // tree::redisplay_data(&state, Arc::clone(&exec_nix_store_res_rc));
+    tree::redisplay_data(&state);
     raw::redisplay_data(&state);
 }
