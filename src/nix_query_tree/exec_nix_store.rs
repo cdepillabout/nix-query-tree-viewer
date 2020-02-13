@@ -42,7 +42,10 @@ impl NixStoreRes {
         }
     }
 
-    pub fn lookup_first_query_entry(&self, nix_query_entry: &NixQueryEntry) -> Option<tree::Path> {
+    pub fn lookup_first_query_entry(
+        &self,
+        nix_query_entry: &NixQueryEntry,
+    ) -> Option<tree::Path> {
         self.map.lookup_first(&nix_query_entry.0).cloned()
     }
 }
@@ -54,7 +57,10 @@ pub struct ExecNixStoreRes {
 }
 
 impl ExecNixStoreRes {
-    pub fn new(nix_store_path: &Path, res: Result<NixStoreRes, NixStoreErr>) -> Self {
+    pub fn new(
+        nix_store_path: &Path,
+        res: Result<NixStoreRes, NixStoreErr>,
+    ) -> Self {
         ExecNixStoreRes {
             nix_store_path: nix_store_path.to_path_buf(),
             res,
@@ -62,7 +68,9 @@ impl ExecNixStoreRes {
     }
 }
 
-pub fn nix_store_res(nix_store_path: &Path) -> Result<NixStoreRes, NixStoreErr> {
+pub fn nix_store_res(
+    nix_store_path: &Path,
+) -> Result<NixStoreRes, NixStoreErr> {
     let nix_store_output: Output = Command::new("nix-store")
         .args(&["--query", "--tree", &nix_store_path.to_string_lossy()])
         .output()
@@ -87,5 +95,6 @@ pub fn run(nix_store_path: &Path) -> ExecNixStoreRes {
 }
 
 fn from_utf8(i: Vec<u8>) -> Result<String, NixStoreErr> {
-    String::from_utf8(i).map_err(|utf8_err| NixStoreErr::Utf8Err(utf8_err.to_string()))
+    String::from_utf8(i)
+        .map_err(|utf8_err| NixStoreErr::Utf8Err(utf8_err.to_string()))
 }

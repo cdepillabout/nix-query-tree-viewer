@@ -33,7 +33,13 @@ pub fn goto(tree_view: gtk::TreeView, first_path: &tree::Path) {
     tree_view.expand_to_path(&first_gtk_path);
 
     // Scroll to the newly opened path.
-    tree_view.scroll_to_cell(Some(&first_gtk_path), col.as_ref(), true, 0.5, 0.5);
+    tree_view.scroll_to_cell(
+        Some(&first_gtk_path),
+        col.as_ref(),
+        true,
+        0.5,
+        0.5,
+    );
 
     let tree_selection: gtk::TreeSelection = tree_view.get_selection();
     // Select the newly opened path.
@@ -73,7 +79,8 @@ pub fn event_button_to_tree_path(
     tree_view: gtk::TreeView,
     event_button: gdk::EventButton,
 ) -> Option<gtk::TreePath> {
-    event_button_to_tree_path_column(tree_view, event_button).map(|tuple| tuple.0)
+    event_button_to_tree_path_column(tree_view, event_button)
+        .map(|tuple| tuple.0)
 }
 
 pub fn is_for_recurse_column(
@@ -82,7 +89,8 @@ pub fn is_for_recurse_column(
     tree_path: gtk::TreePath,
     nix_store_res: &NixStoreRes,
 ) -> Option<NixQueryEntry> {
-    let option_column = Column::from_gtk(tree_view.clone(), tree_view_column.clone());
+    let option_column =
+        Column::from_gtk(tree_view.clone(), tree_view_column.clone());
     let option_nix_query_entry_is_recurse =
         nix_store_res_lookup_gtk_path(nix_store_res, tree_path.clone())
             .filter(|nix_query_entry| nix_query_entry.1 == Recurse::Yes);
@@ -115,6 +123,9 @@ pub fn nix_query_entry_for_event_button(
     event_button: gdk::EventButton,
     nix_store_res: &NixStoreRes,
 ) -> Option<NixQueryEntry> {
-    event_button_to_tree_path(tree_view.clone(), event_button)
-        .and_then(|tree_path| nix_store_res_lookup_gtk_path(nix_store_res, tree_path.clone()))
+    event_button_to_tree_path(tree_view.clone(), event_button).and_then(
+        |tree_path| {
+            nix_store_res_lookup_gtk_path(nix_store_res, tree_path.clone())
+        },
+    )
 }

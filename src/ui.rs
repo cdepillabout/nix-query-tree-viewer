@@ -17,7 +17,11 @@ use super::nix_query_tree::exec_nix_store::NixStoreErr;
 
 use prelude::*;
 
-fn render_nix_store_err(state: &State, nix_store_path: &Path, nix_store_err: &NixStoreErr) {
+fn render_nix_store_err(
+    state: &State,
+    nix_store_path: &Path,
+    nix_store_err: &NixStoreErr,
+) {
     let error_dialog: gtk::MessageDialog = state.get_error_dialog();
     let error_msg = &format!(
         "Error running `nix-store --query --tree {}`:\n\n{}",
@@ -70,7 +74,8 @@ fn handle_msg_recv(state: &State, msg: Message) {
 }
 
 fn app_activate(app: gtk::Application) {
-    let (sender, receiver) = glib::MainContext::channel(glib::source::PRIORITY_DEFAULT);
+    let (sender, receiver) =
+        glib::MainContext::channel(glib::source::PRIORITY_DEFAULT);
 
     let state = State::new(app, sender);
 

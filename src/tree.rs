@@ -137,8 +137,12 @@ where
 {
     // TODO: How to write insert_children_own and insert_children
     // in one function.  Polymorphism over ownership/references??
-    fn insert_children_map<U>(&mut self, children: &[Tree<U>], path: Path, f: &dyn Fn(U) -> T)
-    where
+    fn insert_children_map<U>(
+        &mut self,
+        children: &[Tree<U>],
+        path: Path,
+        f: &dyn Fn(U) -> T,
+    ) where
         U: Clone,
     {
         for (i, child) in children.iter().enumerate() {
@@ -192,7 +196,10 @@ mod tests {
             vec![
                 Tree::singleton("0"),
                 Tree::singleton("1"),
-                Tree::new("2", vec![Tree::singleton("2-0"), Tree::singleton("2-1")]),
+                Tree::new(
+                    "2",
+                    vec![Tree::singleton("2-0"), Tree::singleton("2-1")],
+                ),
             ],
         );
 
@@ -278,7 +285,8 @@ mod tests {
 
         let res_tree_path_map: TreePathMap<String> = tree.path_map();
 
-        let mut actual_tree_path_map: HashMap<String, Vec<Path>> = HashMap::new();
+        let mut actual_tree_path_map: HashMap<String, Vec<Path>> =
+            HashMap::new();
 
         actual_tree_path_map.insert("root".into(), vec![Path::new()]);
         actual_tree_path_map.insert("0".into(), vec![vec![0].into()]);
@@ -317,15 +325,18 @@ mod tests {
 
         let res_tree_path_map: TreePathMap<String> = tree.path_map();
 
-        let mut actual_tree_path_map: HashMap<String, Vec<Path>> = HashMap::new();
+        let mut actual_tree_path_map: HashMap<String, Vec<Path>> =
+            HashMap::new();
 
         actual_tree_path_map.insert(
             "cat".into(),
             vec![Path::new(), vec![1].into(), vec![2, 1, 1].into()],
         );
-        actual_tree_path_map.insert("dog".into(), vec![vec![0].into(), vec![2, 1, 0].into()]);
+        actual_tree_path_map
+            .insert("dog".into(), vec![vec![0].into(), vec![2, 1, 0].into()]);
         actual_tree_path_map.insert("mouse".into(), vec![vec![2].into()]);
-        actual_tree_path_map.insert("fish".into(), vec![vec![2, 0].into(), vec![2, 1].into()]);
+        actual_tree_path_map
+            .insert("fish".into(), vec![vec![2, 0].into(), vec![2, 1].into()]);
 
         assert_eq!(res_tree_path_map, TreePathMap(actual_tree_path_map));
     }

@@ -55,7 +55,8 @@ pub struct NixQueryTree(pub Tree<NixQueryEntry>);
 impl NixQueryTree {
     fn path_map(&self) -> NixQueryPathMap {
         let tree: &Tree<NixQueryEntry> = &self.0;
-        let tree_path_map = tree.path_map_map(&|nix_query_entry| nix_query_entry.0);
+        let tree_path_map =
+            tree.path_map_map(&|nix_query_entry| nix_query_entry.0);
         NixQueryPathMap(tree_path_map)
     }
 

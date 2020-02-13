@@ -8,7 +8,11 @@ use super::path;
 use crate::nix_query_tree::exec_nix_store::NixStoreRes;
 use crate::nix_query_tree::NixQueryEntry;
 
-fn toggle_row_expanded(tree_view: gtk::TreeView, tree_path: gtk::TreePath, recurse: bool) {
+fn toggle_row_expanded(
+    tree_view: gtk::TreeView,
+    tree_path: gtk::TreePath,
+    recurse: bool,
+) {
     if tree_view.row_expanded(&tree_path) {
         tree_view.collapse_row(&tree_path);
     } else {
@@ -22,16 +26,22 @@ fn go_to_path_for_query_entry(
     nix_store_res: &NixStoreRes,
     nix_query_entry: &NixQueryEntry,
 ) {
-    let option_first_path = nix_store_res.lookup_first_query_entry(&nix_query_entry);
+    let option_first_path =
+        nix_store_res.lookup_first_query_entry(&nix_query_entry);
     match option_first_path {
-        None => panic!("Nothing in our map for this drv.  This should hever happen."),
+        None => panic!(
+            "Nothing in our map for this drv.  This should hever happen."
+        ),
         Some(first_path) => {
             path::goto(tree_view, &first_path);
         }
     }
 }
 
-fn go_to_curr_path_for_query_entry(state: &ui::State, nix_query_entry: &NixQueryEntry) {
+fn go_to_curr_path_for_query_entry(
+    state: &ui::State,
+    nix_query_entry: &NixQueryEntry,
+) {
     if let Some(nix_store_res) = &*state.nix_store_res.lock().unwrap() {
         let tree_view = state.get_tree_view();
         go_to_path_for_query_entry(tree_view, nix_store_res, nix_query_entry);
@@ -51,15 +61,22 @@ fn handle_row_activated(
             tree_path.clone(),
             nix_store_res,
         ) {
-            Some(nix_query_entry) => {
-                go_to_path_for_query_entry(tree_view, nix_store_res, &nix_query_entry)
+            Some(nix_query_entry) => go_to_path_for_query_entry(
+                tree_view,
+                nix_store_res,
+                &nix_query_entry,
+            ),
+            _ => {
+                toggle_row_expanded(tree_view.clone(), tree_path.clone(), false)
             }
-            _ => toggle_row_expanded(tree_view.clone(), tree_path.clone(), false),
         }
     }
 }
 
-fn handle_search_for_this_menu_item_activated(state: &ui::State, nix_query_entry: &NixQueryEntry) {
+fn handle_search_for_this_menu_item_activated(
+    state: &ui::State,
+    nix_query_entry: &NixQueryEntry,
+) {
     stack::disable(state);
 
     ui::search_for(state, &nix_query_entry.path());
@@ -72,10 +89,13 @@ fn create_search_for_this_menu_item(
     event_button: gdk::EventButton,
     nix_store_res: &NixStoreRes,
 ) {
-    if let Some(nix_query_entry) =
-        path::nix_query_entry_for_event_button(tree_view.clone(), event_button, nix_store_res)
-    {
-        let search_for_this_menu_item = gtk::MenuItem::new_with_label("Search for this");
+    if let Some(nix_query_entry) = path::nix_query_entry_for_event_button(
+        tree_view.clone(),
+        event_button,
+        nix_store_res,
+    ) {
+        let search_for_this_menu_item =
+            gtk::MenuItem::new_with_label("Search for this");
 
         search_for_this_menu_item.connect_activate(
             clone!(@strong state, @strong nix_query_entry => move |_| {
@@ -94,10 +114,13 @@ fn create_goto_first_instance_menu_item(
     event_button: gdk::EventButton,
     nix_store_res: &NixStoreRes,
 ) {
-    if let Some(nix_query_entry) =
-        path::is_event_button_for_recurse_column(tree_view.clone(), event_button, nix_store_res)
-    {
-        let goto_first_instance_menu_item = gtk::MenuItem::new_with_label("Go to first instance");
+    if let Some(nix_query_entry) = path::is_event_button_for_recurse_column(
+        tree_view.clone(),
+        event_button,
+        nix_store_res,
+    ) {
+        let goto_first_instance_menu_item =
+            gtk::MenuItem::new_with_label("Go to first instance");
 
         goto_first_instance_menu_item.connect_activate(
             clone!(@strong state, @strong nix_query_entry =>

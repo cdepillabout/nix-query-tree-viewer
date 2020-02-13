@@ -1,6 +1,8 @@
 use std::sync::{Arc, Mutex};
 
-use super::super::nix_query_tree::exec_nix_store::{ExecNixStoreRes, NixStoreRes};
+use super::super::nix_query_tree::exec_nix_store::{
+    ExecNixStoreRes, NixStoreRes,
+};
 use super::builder;
 use super::prelude::*;
 

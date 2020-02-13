@@ -1,5 +1,7 @@
 use crate::nix_query_tree::exec_nix_store::NixStoreRes;
-use crate::nix_query_tree::{NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse};
+use crate::nix_query_tree::{
+    NixQueryDrv, NixQueryEntry, NixQueryTree, Recurse,
+};
 use crate::tree::Tree;
 
 use super::super::super::prelude::*;

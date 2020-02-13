@@ -12,15 +12,18 @@ pub enum Column {
 
 // Is there some way to derive these types of things?
 const LIST: [Column; 2] = [Column::Item, Column::Recurse];
-pub const INDICIES: [usize; 2] = [Column::Item as usize, Column::Recurse as usize];
+pub const INDICIES: [usize; 2] =
+    [Column::Item as usize, Column::Recurse as usize];
 
 impl Column {
     pub fn from_gtk(
         tree_view: gtk::TreeView,
         tree_view_column: gtk::TreeViewColumn,
     ) -> Option<Column> {
-        let column_pos: usize =
-            get_tree_view_column_pos(tree_view.clone(), tree_view_column.clone());
+        let column_pos: usize = get_tree_view_column_pos(
+            tree_view.clone(),
+            tree_view_column.clone(),
+        );
         Column::try_from(column_pos).ok()
     }
 }

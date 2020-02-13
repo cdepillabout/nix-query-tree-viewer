@@ -7,8 +7,10 @@ use super::super::super::ui;
 use super::super::prelude::*;
 
 fn setup_store(state: &ui::State) -> gtk::TreeStore {
-    let tree_store: gtk::TreeStore =
-        gtk::TreeStore::new(&[glib::types::Type::String, glib::types::Type::String]);
+    let tree_store: gtk::TreeStore = gtk::TreeStore::new(&[
+        glib::types::Type::String,
+        glib::types::Type::String,
+    ]);
 
     state.get_tree_view().set_model(Some(&tree_store));
 

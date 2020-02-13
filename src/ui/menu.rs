@@ -14,9 +14,11 @@ fn connect_signals(state: &ui::State) {
 
     let quit_menu_item: gtk::MenuItem = state.get_quit_menu_item();
 
-    quit_menu_item.connect_activate(clone!(@weak state.app as app => move |_| {
-        app.quit();
-    }));
+    quit_menu_item.connect_activate(
+        clone!(@weak state.app as app => move |_| {
+            app.quit();
+        }),
+    );
 }
 
 pub fn setup(state: &ui::State) {
