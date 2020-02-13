@@ -2,7 +2,6 @@ use glib::clone;
 
 use super::super::super::super::ui;
 use super::super::super::prelude::*;
-use super::super::super::stack;
 use super::path;
 use crate::nix_query_tree::exec_nix_store::NixStoreRes;
 use crate::nix_query_tree::NixQueryEntry;
@@ -76,8 +75,6 @@ fn handle_search_for_this_menu_item_activated(
     state: &ui::State,
     nix_query_entry: &NixQueryEntry,
 ) {
-    stack::disable(state);
-
     ui::search_for(state, &nix_query_entry.path());
 }
 

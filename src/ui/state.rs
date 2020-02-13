@@ -76,4 +76,12 @@ impl State {
     pub fn get_cell_renderer_text_repeat(&self) -> gtk::CellRendererText {
         self.builder.get_object_expect("cellRendererTextRepeat")
     }
+
+    pub fn get_search_entry(&self) -> gtk::SearchEntry {
+        self.builder.get_object_expect("searchEntry")
+    }
+
+    pub fn get_search_button(&self) -> gtk::Button {
+        self.builder.get_object_expect("searchButton")
+    }
 }

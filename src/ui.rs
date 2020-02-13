@@ -4,6 +4,7 @@ mod menu;
 mod stack;
 mod state;
 mod statusbar;
+mod toolbar;
 
 pub mod prelude;
 
@@ -45,6 +46,8 @@ fn search_for(state: &State, nix_store_path: &Path) {
     // nix-store --query --tree /nix/store/jymg0kanmlgbcv35wxd8d660rw0fawhv-hello-2.10.drv
     // nix-store --query --tree /nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
 
+    disable(state);
+
     statusbar::show_msg(
         state,
         &format!("Searching for {}...", nix_store_path.display()),
@@ -66,7 +69,19 @@ fn redisplay_data(state: &State) {
     stack::redisplay_data(state);
 }
 
+fn disable(state: &State) {
+    stack::disable(state);
+    toolbar::disable(state);
+}
+
+fn enable(state: &State) {
+    stack::enable(state);
+    toolbar::enable(state);
+}
+
 fn handle_msg_recv(state: &State, msg: Message) {
+    enable(state);
+
     match msg {
         Message::Display(exec_nix_store_res) => match exec_nix_store_res.res {
             Err(nix_store_err) => {
@@ -75,7 +90,6 @@ fn handle_msg_recv(state: &State, msg: Message) {
                     &exec_nix_store_res.nix_store_path,
                     &nix_store_err,
                 );
-                stack::enable(state);
             }
             Ok(nix_store_res) => {
                 *state.nix_store_res.lock().unwrap() = Some(nix_store_res);
@@ -96,9 +110,12 @@ fn app_activate(app: gtk::Application) {
 
     css::setup(window.clone().upcast());
 
+    menu::setup(&state);
+
+    toolbar::setup(&state);
+
     stack::setup(&state);
 
-    menu::setup(&state);
 
     window.show_all();
 
