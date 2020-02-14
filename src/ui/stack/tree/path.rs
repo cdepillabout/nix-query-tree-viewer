@@ -5,7 +5,7 @@ use crate::nix_query_tree::{NixQueryEntry, NixQueryTree, Recurse};
 use crate::tree;
 use std::collections::VecDeque;
 
-fn gtk_tree_path_to_tree_path(gtk_tree_path: gtk::TreePath) -> tree::Path {
+pub fn gtk_tree_path_to_tree_path(gtk_tree_path: gtk::TreePath) -> tree::Path {
     tree::Path(
         gtk_tree_path
             .get_indices()
@@ -52,6 +52,15 @@ fn nix_query_tree_lookup_gtk_path(
 ) -> Option<NixQueryEntry> {
     let path = gtk_tree_path_to_tree_path(tree_path.clone());
     nix_query_tree.lookup(path.clone()).cloned()
+}
+
+pub fn nix_store_res_lookup_gtk_tree_iter(
+    nix_store_res: &NixStoreRes,
+    tree_store: gtk::TreeStore,
+    tree_iter: gtk::TreeIter,
+) -> Option<NixQueryEntry> {
+    let tree_path = tree_store.get_path(&tree_iter)?;
+    nix_query_tree_lookup_gtk_path(&nix_store_res.tree, tree_path)
 }
 
 fn nix_store_res_lookup_gtk_path(
