@@ -24,10 +24,6 @@ fn clear(state: &ui::State) {
     let option_tree_store: Option<gtk::TreeStore> = option_tree_model
         .clone()
         .and_then(|tree_model: gtk::TreeModel| tree_model.downcast().ok());
-    println!(
-        "tree_model: {:?}, tree_store: {:?}",
-        option_tree_model, option_tree_store
-    );
 
     if let Some(tree_store) = option_tree_store {
         tree_store.clear();

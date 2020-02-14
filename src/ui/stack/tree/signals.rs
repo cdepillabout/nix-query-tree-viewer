@@ -71,6 +71,42 @@ fn handle_row_activated(
     }
 }
 
+fn handle_copy_drv_path_menu_item_activated(
+    tree_view: gtk::TreeView,
+    nix_query_entry: &NixQueryEntry,
+) {
+    if let Some(display) = tree_view.get_display() {
+        if let Some(clipboard) = gtk::Clipboard::get_default(&display) {
+            clipboard.set_text(&nix_query_entry.path().to_string_lossy());
+            clipboard.store();
+        }
+    }
+}
+
+fn create_copy_drv_path_menu_item(
+    tree_view: gtk::TreeView,
+    menu: gtk::Menu,
+    event_button: gdk::EventButton,
+    nix_store_res: &NixStoreRes,
+) {
+    if let Some(nix_query_entry) = path::nix_query_entry_for_event_button(
+        tree_view.clone(),
+        event_button,
+        nix_store_res,
+    ) {
+        let copy_drv_path_menu_item =
+            gtk::MenuItem::new_with_label("Copy drv path");
+
+        copy_drv_path_menu_item.connect_activate(
+            clone!(@strong tree_view, @strong nix_query_entry => move |_| {
+                handle_copy_drv_path_menu_item_activated(tree_view.clone(), &nix_query_entry);
+            }),
+        );
+
+        menu.append(&copy_drv_path_menu_item);
+    }
+}
+
 fn handle_search_for_this_menu_item_activated(
     state: &ui::State,
     nix_query_entry: &NixQueryEntry,
@@ -140,6 +176,13 @@ fn handle_button_press_event(
         {
             let menu: gtk::Menu = gtk::Menu::new();
 
+            create_copy_drv_path_menu_item(
+                tree_view.clone(),
+                menu.clone(),
+                event_button.clone(),
+                nix_store_res,
+            );
+
             create_search_for_this_menu_item(
                 state,
                 tree_view.clone(),
@@ -156,9 +199,12 @@ fn handle_button_press_event(
                 nix_store_res,
             );
 
-            menu.set_property_attach_widget(Some(&tree_view.clone()));
-            menu.show_all();
-            menu.popup_at_pointer(Some(&event_button));
+            // only show the menu if there is at least one child
+            if menu.get_children().len() >= 1 {
+                menu.set_property_attach_widget(Some(&tree_view.clone()));
+                menu.show_all();
+                menu.popup_at_pointer(Some(&event_button));
+            }
         }
     }
 
