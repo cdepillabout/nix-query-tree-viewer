@@ -175,6 +175,20 @@ pub fn redisplay_data(state: &ui::State) {
                 println!("\t\t\tyo my rust func, nix_query_entry_a = {:?}", &option_nix_query_entry_a);
                 println!("\t\t\tyo my rust func, nix_query_entry_b = {:?}", &option_nix_query_entry_b);
 
+                match (option_nix_query_entry_a, option_nix_query_entry_b) {
+                    (Some(nix_query_entry_a), Some(nix_query_entry_b)) => {
+                        match nix_query_entry_a.path().cmp(nix_query_entry_b.path()) {
+                            Ordering::Less => -1,
+                            Ordering::Equal => 0,
+                            Ordering::Greater => 1,
+                        }
+                    }
+                    _ => panic!("Not able to get an ordering for one of the nix_query_entries.  This should never happen."),
+                }
+            } else {
+                panic!("The nix_store_res in state hasn't been set yet.  This should never happen.");
+            }
+
             // let o_res: Option<_> = {
             //     let mutex_guard_res: std::sync::MutexGuard<_> = state.nix_store_res.lock().unwrap();
             //     mutex_guard_res.deref().clone()
@@ -209,18 +223,8 @@ pub fn redisplay_data(state: &ui::State) {
                 // println!("\t\t\tyo my rust func, got nix store res thing...");
                 // println!("\t\t\tyo my rust func, nix_query_entry_a = {:?}", &option_nix_query_entry_a);
                 // println!("\t\t\tyo my rust func, nix_query_entry_b = {:?}", &option_nix_query_entry_b);
-            }
-            0
         }))
     );
-
-    // tree_model_sort.set_sort_func(
-    //     gtk::SortColumn::Index(0),
-    //     clone!(@strong state => move |tree_model_sort, tree_model_sort_iter_a, tree_model_sort_iter_b| {
-    //         println!("hello1");
-    //         Ordering::Equal
-    //     }),
-    // );
 
     tree_model_sort.set_sort_column_id(gtk::SortColumn::Index(0), gtk::SortType::Ascending);
 
