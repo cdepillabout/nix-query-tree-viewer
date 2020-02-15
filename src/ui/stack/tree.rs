@@ -189,104 +189,10 @@ pub fn redisplay_data(state: &ui::State) {
                 panic!("The nix_store_res in state hasn't been set yet.  This should never happen.");
             }
 
-            // let o_res: Option<_> = {
-            //     let mutex_guard_res: std::sync::MutexGuard<_> = state.nix_store_res.lock().unwrap();
-            //     mutex_guard_res.deref().clone()
-            // };
-            // println!("\t\t\tyo my rust func, after locking");
-            // if let Some(res) = o_res {
-
-            //     let tree_store: &gtk::TreeStore = tree_model.downcast_ref().expect("tree_model is not a tree_store");
-
-            //     let option_nix_query_entry_a: Option<crate::nix_query_tree::NixQueryEntry> =
-            //             path::nix_store_res_lookup_gtk_tree_iter(&res, tree_store.clone(), tree_model_sort_iter_a.clone());
-
-            //     let option_nix_query_entry_b: Option<crate::nix_query_tree::NixQueryEntry> =
-            //             path::nix_store_res_lookup_gtk_tree_iter(&res, tree_store.clone(), tree_model_sort_iter_b.clone());
-
-            //     println!("\t\t\tyo my rust func, got nix store res thing...");
-            //     println!("\t\t\tyo my rust func, nix_query_entry_a = {:?}", &option_nix_query_entry_a);
-            //     println!("\t\t\tyo my rust func, nix_query_entry_b = {:?}", &option_nix_query_entry_b);
-
-                // let tree_store = state.get_tree_store();
-
-                // let tree_model_sort: &gtk::TreeModelSort = tree_model.dynamic_cast_ref().expect("YO NOT ACTUALLY TREE MODEL SORT");
-
-                // let tree_store_iter_a: gtk::TreeIter = tree_model_sort.convert_iter_to_child_iter(tree_model_sort_iter_a);
-                // let tree_store_iter_b: gtk::TreeIter = tree_model_sort.convert_iter_to_child_iter(tree_model_sort_iter_b);
-
-                // let option_nix_query_entry_a: Option<crate::nix_query_tree::NixQueryEntry> =
-                //         path::nix_store_res_lookup_gtk_tree_iter(res, tree_store.clone(), tree_store_iter_a);
-                // let option_nix_query_entry_b: Option<crate::nix_query_tree::NixQueryEntry> =
-                //         path::nix_store_res_lookup_gtk_tree_iter(res, tree_store.clone(), tree_store_iter_b);
-
-                // println!("\t\t\tyo my rust func, got nix store res thing...");
-                // println!("\t\t\tyo my rust func, nix_query_entry_a = {:?}", &option_nix_query_entry_a);
-                // println!("\t\t\tyo my rust func, nix_query_entry_b = {:?}", &option_nix_query_entry_b);
         }))
     );
 
     tree_model_sort.set_sort_column_id(gtk::SortColumn::Index(0), gtk::SortType::Ascending);
-
-
-    // tree_model_sort.set_default_sort_func(clone!(@strong state => move |tree_model_sort, tree_model_sort_iter_a, tree_model_sort_iter_b| {
-    //     println!("hello1");
-        // if let Some(res) = &*state.nix_store_res.lock().unwrap() {
-
-            // let tree_store = state.get_tree_store();
-
-            // let tree_store_iter_a: gtk::TreeIter = tree_model_sort.convert_iter_to_child_iter(tree_model_sort_iter_a);
-            // let tree_store_iter_b: gtk::TreeIter = tree_model_sort.convert_iter_to_child_iter(tree_model_sort_iter_b);
-
-            // let option_nix_query_entry_a: Option<crate::nix_query_tree::NixQueryEntry> =
-            //         path::nix_store_res_lookup_gtk_tree_iter(res, tree_store.clone(), tree_store_iter_a);
-            // let option_nix_query_entry_b: Option<crate::nix_query_tree::NixQueryEntry> =
-            //         path::nix_store_res_lookup_gtk_tree_iter(res, tree_store.clone(), tree_store_iter_b);
-
-            // println!("in set_default_sorc_func, got nix store res thing...");
-            // println!("\tin set_default_sort_func, nix_query_entry_a = {:?}", &option_nix_query_entry_a);
-            // println!("\tin set_default_sort_func, nix_query_entry_b = {:?}", &option_nix_query_entry_b);
-        // }
-        // Ordering::Equal
-    // }));
-    //     println!("in set_default_sorc_func...");
-    //     if let Some(res) = &*state.nix_store_res.lock().unwrap() {
-    //         println!("\tin set_default_sorc_func, got nix store res thing...");
-    //         let option_nix_query_entry_a: Option<crate::nix_query_tree::NixQueryEntry> = path::nix_store_res_lookup_gtk_tree_iter(res, tree_store.clone(), tree_iter_a.clone());
-    //         let option_nix_query_entry_b = path::nix_store_res_lookup_gtk_tree_iter(res, tree_store.clone(), tree_iter_b.clone());
-
-    //         let option_path_a: Option<&std::path::Path> = option_nix_query_entry_a.as_ref().map(|x| x.path());
-    //         let option_path_b: Option<&std::path::Path> = option_nix_query_entry_b.as_ref().map(|x| x.path());
-
-    //         let option_gtk_tree_path_a: Option<gtk::TreePath> = tree_store.get_path(&tree_iter_a);
-    //         let option_gtk_tree_path_b: Option<gtk::TreePath> = tree_store.get_path(&tree_iter_b);
-
-    //         let option_my_tree_path_a: Option<crate::tree::Path> = option_gtk_tree_path_a.map(|p| path::gtk_tree_path_to_tree_path(p));
-    //         let option_my_tree_path_b: Option<crate::tree::Path> = option_gtk_tree_path_b.map(|p| path::gtk_tree_path_to_tree_path(p));
-
-    //         let option_blahblah_a: Option<_> = option_my_tree_path_a.clone().and_then(|p| res.tree.lookup(p));
-    //         let option_blahblah_b: Option<_> = option_my_tree_path_b.clone().and_then(|p| res.tree.lookup(p));
-    //         // nix_query_tree.lookup(path.clone()).cloned()
-
-    //         let option_iter_str_a = tree_store.get_string_from_iter(&tree_iter_a).as_ref().map(|x| String::from(x.as_str()));
-    //         let option_iter_str_b = tree_store.get_string_from_iter(&tree_iter_b).as_ref().map(|x| String::from(x.as_str()));
-
-    //         println!("\tin set_default_sort_func, nix_query_entry_a = {:?}, iter = {:?}, my_tree_path = {:?}, blah = {:?}", &option_path_a, option_iter_str_a, option_my_tree_path_a, option_blahblah_a);
-    //         println!("\tin set_default_sort_func, nix_query_entry_b = {:?}, iter = {:?}, my_tree_path = {:?}, blah = {:?}", &option_path_b, option_iter_str_b, option_my_tree_path_b, option_blahblah_b);
-    //         println!("");
-
-    //         match (option_nix_query_entry_a, option_nix_query_entry_b) {
-    //             (Some(nix_query_entry_a), Some(nix_query_entry_b)) => {
-    //                 nix_query_entry_a.path().cmp(nix_query_entry_b.path())
-    //             }
-    //             _ => Ordering::Equal,
-    //         }
-    //     } else {
-    //         Ordering::Equal
-    //     }
-    // }));
-
-    // tree_store.set_sort_column_id(gtk::SortColumn::Default, gtk::SortType::Ascending);
 
     println!("redisplay_data, before expand tree_view...");
 
