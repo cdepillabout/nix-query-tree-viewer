@@ -53,8 +53,8 @@ fn handle_row_activated(
     tree_view_column: gtk::TreeViewColumn,
 ) {
     if let Some(nix_store_res) = &*state.read_nix_store_res() {
-        match path::is_for_recurse_column(
-            tree_view.clone(),
+        match path::is_for_real_recurse_column(
+            state,
             tree_view_column.clone(),
             tree_path.clone(),
             nix_store_res,
@@ -74,9 +74,10 @@ fn handle_row_activated(
 }
 
 fn handle_copy_drv_path_menu_item_activated(
-    tree_view: gtk::TreeView,
+    state: &ui::State,
     nix_query_entry: &NixQueryEntry,
 ) {
+    let tree_view = state.get_tree_view();
     if let Some(display) = tree_view.get_display() {
         if let Some(clipboard) = gtk::Clipboard::get_default(&display) {
             clipboard.set_text(&nix_query_entry.path().to_string_lossy());
@@ -86,13 +87,14 @@ fn handle_copy_drv_path_menu_item_activated(
 }
 
 fn create_copy_drv_path_menu_item(
-    tree_view: gtk::TreeView,
+    state: &ui::State,
     menu: gtk::Menu,
     event_button: gdk::EventButton,
     nix_store_res: &NixStoreRes,
 ) {
+    println!("In create_copy_drv_path_menu_item, starting...");
     if let Some(nix_query_entry) = path::nix_query_entry_for_event_button(
-        tree_view.clone(),
+        state,
         event_button,
         nix_store_res,
     ) {
@@ -101,8 +103,8 @@ fn create_copy_drv_path_menu_item(
             gtk::MenuItem::new_with_label("Copy drv path");
 
         copy_drv_path_menu_item.connect_activate(
-            clone!(@strong tree_view, @strong nix_query_entry => move |_| {
-                handle_copy_drv_path_menu_item_activated(tree_view.clone(), &nix_query_entry);
+            clone!(@strong state, @strong nix_query_entry => move |_| {
+                handle_copy_drv_path_menu_item_activated(&state, &nix_query_entry);
             }),
         );
 
@@ -119,13 +121,12 @@ fn handle_search_for_this_menu_item_activated(
 
 fn create_search_for_this_menu_item(
     state: &ui::State,
-    tree_view: gtk::TreeView,
     menu: gtk::Menu,
     event_button: gdk::EventButton,
     nix_store_res: &NixStoreRes,
 ) {
     if let Some(nix_query_entry) = path::nix_query_entry_for_event_button(
-        tree_view.clone(),
+        state,
         event_button,
         nix_store_res,
     ) {
@@ -144,11 +145,11 @@ fn create_search_for_this_menu_item(
 
 fn create_goto_first_instance_menu_item(
     state: &ui::State,
-    tree_view: gtk::TreeView,
     menu: gtk::Menu,
     event_button: gdk::EventButton,
     nix_store_res: &NixStoreRes,
 ) {
+    let tree_view = state.get_tree_view();
     if let Some(nix_query_entry) = path::is_event_button_for_recurse_column(
         tree_view.clone(),
         event_button,
@@ -180,7 +181,7 @@ fn handle_button_press_event(
             let menu: gtk::Menu = gtk::Menu::new();
 
             create_copy_drv_path_menu_item(
-                tree_view.clone(),
+                state,
                 menu.clone(),
                 event_button.clone(),
                 nix_store_res,
@@ -188,7 +189,6 @@ fn handle_button_press_event(
 
             create_search_for_this_menu_item(
                 state,
-                tree_view.clone(),
                 menu.clone(),
                 event_button.clone(),
                 nix_store_res,
@@ -196,7 +196,6 @@ fn handle_button_press_event(
 
             create_goto_first_instance_menu_item(
                 state,
-                tree_view.clone(),
                 menu.clone(),
                 event_button.clone(),
                 nix_store_res,
