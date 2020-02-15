@@ -14,7 +14,7 @@ use glib::clone;
 use std::path::Path;
 use std::thread;
 
-use super::nix_query_tree::exec_nix_store::NixStoreErr;
+use super::nix_query_tree::exec_nix_store::{NixStoreErr, NixStoreRes};
 
 use prelude::*;
 
@@ -92,7 +92,8 @@ fn handle_msg_recv(state: &State, msg: Message) {
                 );
             }
             Ok(nix_store_res) => {
-                *state.nix_store_res.lock().unwrap() = Some(nix_store_res);
+                let option_nix_store_res: &mut Option<NixStoreRes> = &mut *state.nix_store_res.write().unwrap();
+                *option_nix_store_res = Some(nix_store_res);
                 redisplay_data(state);
             }
         },

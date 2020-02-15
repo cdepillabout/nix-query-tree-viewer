@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock, RwLockReadGuard};
 
 use super::super::nix_query_tree::exec_nix_store::{
     ExecNixStoreRes, NixStoreRes,
@@ -16,7 +16,7 @@ pub struct State {
     pub app: gtk::Application,
     pub builder: gtk::Builder,
     pub sender: glib::Sender<Message>,
-    pub nix_store_res: Arc<Mutex<Option<NixStoreRes>>>,
+    pub nix_store_res: Arc<RwLock<Option<NixStoreRes>>>,
 }
 
 impl State {
@@ -25,8 +25,12 @@ impl State {
             app,
             builder: builder::create(),
             sender,
-            nix_store_res: Arc::new(Mutex::new(None)),
+            nix_store_res: Arc::new(RwLock::new(None)),
         }
+    }
+
+    pub fn read_nix_store_res(&self) -> RwLockReadGuard<Option<NixStoreRes>> {
+        self.nix_store_res.read().unwrap()
     }
 
     pub fn get_app_win(&self) -> gtk::ApplicationWindow {
@@ -83,5 +87,13 @@ impl State {
 
     pub fn get_search_button(&self) -> gtk::Button {
         self.builder.get_object_expect("searchButton")
+    }
+
+    pub fn get_tree_store(&self) -> gtk::TreeStore {
+        self.builder.get_object_expect("treeStore")
+    }
+
+    pub fn get_tree_model_sort(&self) -> gtk::TreeModelSort {
+        self.builder.get_object_expect("treeModelSort")
     }
 }

@@ -38,6 +38,17 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-ok</property>
   </object>
+  <object class="GtkTreeStore" id="treeStore">
+    <columns>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+      <!-- column-name gchararray2 -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkTreeModelSort" id="treeModelSort">
+    <property name="model">treeStore</property>
+  </object>
   <object class="GtkApplicationWindow" id="appWindow">
     <property name="can_focus">False</property>
     <child>
@@ -177,6 +188,7 @@
                   <object class="GtkTreeView" id="treeView">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="model">treeModelSort</property>
                     <property name="search_column">0</property>
                     <property name="enable_grid_lines">both</property>
                     <property name="enable_tree_lines">True</property>
