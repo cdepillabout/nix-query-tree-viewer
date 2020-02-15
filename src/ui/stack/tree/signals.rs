@@ -149,9 +149,8 @@ fn create_goto_first_instance_menu_item(
     event_button: gdk::EventButton,
     nix_store_res: &NixStoreRes,
 ) {
-    let tree_view = state.get_tree_view();
     if let Some(nix_query_entry) = path::is_event_button_for_recurse_column(
-        tree_view.clone(),
+        state,
         event_button,
         nix_store_res,
     ) {

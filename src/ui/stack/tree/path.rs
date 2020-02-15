@@ -135,7 +135,6 @@ pub fn is_for_real_recurse_column(
     tree_path: gtk::TreePath,
     nix_store_res: &NixStoreRes,
 ) -> Option<NixQueryEntry> {
-    let tree_view = state.get_tree_view();
     let tree_model_sort = state.get_tree_model_sort();
     let child_tree_path = tree_model_sort
         .convert_path_to_child_path(&tree_path)
