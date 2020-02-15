@@ -27,12 +27,10 @@ pub fn enable(state: &ui::State) {
 }
 
 fn render_nix_store_res(state: &ui::State) {
-    println!("render_nix_store_res, starting, about to lock...");
     if let Some(res) = &*state.read_nix_store_res() {
         let tree_store = state.get_tree_store();
         store::insert(tree_store, res);
     }
-    println!("render_nix_store_res, ending, releasing lock");
 }
 
 pub fn setup(state: &ui::State) {
@@ -87,7 +85,6 @@ fn set_sort_func<O: IsA<gtk::TreeSortable>>(
     tree_model_sort: &O,
     sort_func: Box<dyn Fn(&gtk::TreeModel, &gtk::TreeIter, &gtk::TreeIter) -> i32 + 'static>,
 ) {
-    println!("\tset_sort_func, starting...");
     let sort_func_data: Box<Box<dyn Fn(&gtk::TreeModel, &gtk::TreeIter, &gtk::TreeIter) -> i32 + 'static>> =
         Box::new(sort_func);
 
@@ -97,16 +94,13 @@ fn set_sort_func<O: IsA<gtk::TreeSortable>>(
         tree_iter_b: *mut gtk_sys::GtkTreeIter,
         user_data: glib_sys::gpointer,
     ) -> i32 {
-        println!("\t\tsort_func_func, starting...");
         let tree_model: gtk::TreeModel = glib::translate::from_glib_borrow(tree_model);
         let tree_iter_a: gtk::TreeIter = glib::translate::from_glib_borrow(tree_iter_a);
         let tree_iter_b: gtk::TreeIter = glib::translate::from_glib_borrow(tree_iter_b);
         let callback: &Box<dyn Fn(&gtk::TreeModel, &gtk::TreeIter, &gtk::TreeIter) -> i32 + 'static> =
             &*(user_data as *mut _);
 
-        println!("\t\tsort_func_func, calling callback...");
         let res = callback(&tree_model, &tree_iter_a, &tree_iter_b);
-        println!("\t\tsort_func_func, after callback , got {}", res);
         res
     }
 
@@ -118,7 +112,6 @@ fn set_sort_func<O: IsA<gtk::TreeSortable>>(
             Box::from_raw(data as *mut _);
     }
 
-    println!("\tset_sort_func, before calling inner unsafe...");
     unsafe {
         gtk_sys::gtk_tree_sortable_set_sort_func(
             y,
@@ -128,7 +121,6 @@ fn set_sort_func<O: IsA<gtk::TreeSortable>>(
             Some(destroy_func as unsafe extern "C" fn(_: *mut std::ffi::c_void)),
         );
     }
-    println!("\tset_sort_func, after calling inner unsafe")
 }
 
 // gtk_sys::gtk_tree_sortable_set_default_sort_func(
@@ -153,53 +145,47 @@ pub fn redisplay_data(state: &ui::State) {
 
     render_nix_store_res(state);
 
-    println!("redisplay_data, starting...");
-
     let tree_model_sort = state.get_tree_model_sort();
 
-    set_sort_func(
-        &tree_model_sort,
-        Box::new(clone!(@strong state => move|tree_model, tree_model_sort_iter_a, tree_model_sort_iter_b| {
-            println!("\t\t\tyo my rust func, starting, about to lock...");
-            if let Some(nix_store_res) = &*state.read_nix_store_res() {
-                println!("\t\t\tyo my rust func, after locking");
-                let tree_store: &gtk::TreeStore = tree_model.downcast_ref().expect("tree_model is not a tree_store");
+    // TODO: Uncomment this.
+    // set_sort_func(
+    //     &tree_model_sort,
+    //     Box::new(clone!(@strong state => move|tree_model, tree_model_sort_iter_a, tree_model_sort_iter_b| {
+    //         if let Some(nix_store_res) = &*state.read_nix_store_res() {
+    //             let tree_store: &gtk::TreeStore = tree_model.downcast_ref().expect("tree_model is not a tree_store");
 
-                let option_nix_query_entry_a: Option<crate::nix_query_tree::NixQueryEntry> =
-                        path::nix_store_res_lookup_gtk_tree_iter(&nix_store_res, tree_store.clone(), tree_model_sort_iter_a.clone());
+    //             let option_nix_query_entry_a: Option<crate::nix_query_tree::NixQueryEntry> =
+    //                     path::nix_store_res_lookup_gtk_tree_iter(&nix_store_res, tree_store.clone(), tree_model_sort_iter_a.clone());
 
-                let option_nix_query_entry_b: Option<crate::nix_query_tree::NixQueryEntry> =
-                        path::nix_store_res_lookup_gtk_tree_iter(&nix_store_res, tree_store.clone(), tree_model_sort_iter_b.clone());
+    //             let option_nix_query_entry_b: Option<crate::nix_query_tree::NixQueryEntry> =
+    //                     path::nix_store_res_lookup_gtk_tree_iter(&nix_store_res, tree_store.clone(), tree_model_sort_iter_b.clone());
 
-                println!("\t\t\tyo my rust func, got nix store res thing...");
-                println!("\t\t\tyo my rust func, nix_query_entry_a = {:?}", &option_nix_query_entry_a);
-                println!("\t\t\tyo my rust func, nix_query_entry_b = {:?}", &option_nix_query_entry_b);
+    //             // println!("\t\t\tyo my rust func, got nix store res thing...");
+    //             // println!("\t\t\tyo my rust func, nix_query_entry_a = {:?}", &option_nix_query_entry_a);
+    //             // println!("\t\t\tyo my rust func, nix_query_entry_b = {:?}", &option_nix_query_entry_b);
 
-                match (option_nix_query_entry_a, option_nix_query_entry_b) {
-                    (Some(nix_query_entry_a), Some(nix_query_entry_b)) => {
-                        match nix_query_entry_a.path().cmp(nix_query_entry_b.path()) {
-                            Ordering::Less => -1,
-                            Ordering::Equal => 0,
-                            Ordering::Greater => 1,
-                        }
-                    }
-                    _ => panic!("Not able to get an ordering for one of the nix_query_entries.  This should never happen."),
-                }
-            } else {
-                panic!("The nix_store_res in state hasn't been set yet.  This should never happen.");
-            }
+    //             match (option_nix_query_entry_a, option_nix_query_entry_b) {
+    //                 (Some(nix_query_entry_a), Some(nix_query_entry_b)) => {
+    //                     match nix_query_entry_a.path().cmp(nix_query_entry_b.path()) {
+    //                         Ordering::Less => -1,
+    //                         Ordering::Equal => 0,
+    //                         Ordering::Greater => 1,
+    //                     }
+    //                 }
+    //                 _ => panic!("Not able to get an ordering for one of the nix_query_entries.  This should never happen."),
+    //             }
+    //         } else {
+    //             panic!("The nix_store_res in state hasn't been set yet.  This should never happen.");
+    //         }
+    //     }))
+    // );
 
-        }))
-    );
-
+    // TODO: When this is enabled, the right clicks no longer go to the right item.  Maybe I have
+    // to use the child iter thing now???
     tree_model_sort.set_sort_column_id(gtk::SortColumn::Index(0), gtk::SortType::Ascending);
-
-    println!("redisplay_data, before expand tree_view...");
 
     // expand the first row of the tree view
     state
         .get_tree_view()
         .expand_row(&gtk::TreePath::new_first(), false);
-
-    println!("redisplay_data, after expand tree_view...");
 }

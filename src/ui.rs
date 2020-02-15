@@ -92,11 +92,11 @@ fn handle_msg_recv(state: &State, msg: Message) {
                 );
             }
             Ok(nix_store_res) => {
+                // Update state with the new nix_store_res.  This needs to be in a block so that
+                // the RwLock is released before we call redisplay_data.
                 {
-                    println!("handle_msg_recv, starting, about to lock...");
                     let option_nix_store_res: &mut Option<NixStoreRes> = &mut *state.nix_store_res.write().unwrap();
                     *option_nix_store_res = Some(nix_store_res);
-                    println!("handle_msg_recv, before redisplay_data, probably releasing the lock...");
                 }
                 redisplay_data(state);
             }

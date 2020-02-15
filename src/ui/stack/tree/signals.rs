@@ -40,12 +40,10 @@ fn go_to_curr_path_for_query_entry(
     state: &ui::State,
     nix_query_entry: &NixQueryEntry,
 ) {
-    println!("go_to_curr_path_for_query_entry, starting, about to lock...");
     if let Some(nix_store_res) = &*state.read_nix_store_res() {
         let tree_view = state.get_tree_view();
         go_to_path_for_query_entry(tree_view, nix_store_res, nix_query_entry);
     }
-    println!("go_to_curr_path_for_query_entry, ending, releasing lock...");
 }
 
 fn handle_row_activated(
@@ -54,9 +52,7 @@ fn handle_row_activated(
     tree_path: gtk::TreePath,
     tree_view_column: gtk::TreeViewColumn,
 ) {
-    println!("handle_row_activated, starting, about to lock...");
     if let Some(nix_store_res) = &*state.read_nix_store_res() {
-        println!("handle_row_activated, aquired lock, about to call is_for_recurse_column...");
         match path::is_for_recurse_column(
             tree_view.clone(),
             tree_view_column.clone(),
@@ -64,7 +60,6 @@ fn handle_row_activated(
             nix_store_res,
         ) {
             Some(nix_query_entry) => {
-                println!("handle_row_activated, is for recurse_column, about to call go_to_path_for_query_entry...");
                 go_to_path_for_query_entry(
                     tree_view,
                     nix_store_res,
@@ -72,12 +67,10 @@ fn handle_row_activated(
                 )
             }
             _ => {
-                println!("handle_row_activated, is not for recurse_column, about to call toggle_row_expanded...");
                 toggle_row_expanded(tree_view.clone(), tree_path.clone(), false)
             }
         }
     }
-    println!("handle_row_activated, ending, releasing lock...");
 }
 
 fn handle_copy_drv_path_menu_item_activated(
@@ -103,6 +96,7 @@ fn create_copy_drv_path_menu_item(
         event_button,
         nix_store_res,
     ) {
+        println!("In create_copy_drv_path_menu_item, nix query entry: {:?}", nix_query_entry);
         let copy_drv_path_menu_item =
             gtk::MenuItem::new_with_label("Copy drv path");
 
@@ -179,7 +173,6 @@ fn handle_button_press_event(
     tree_view: gtk::TreeView,
     event_button: gdk::EventButton,
 ) -> Inhibit {
-    println!("handle_button_press_event, starting, about to lock...");
     if let Some(nix_store_res) = &*state.read_nix_store_res() {
         if event_button.get_event_type() == gdk::EventType::ButtonPress
             && event_button.get_button() == 3
@@ -217,8 +210,6 @@ fn handle_button_press_event(
             }
         }
     }
-
-    println!("handle_button_press_event, ending, releasing lock...");
 
     Inhibit(false)
 }
