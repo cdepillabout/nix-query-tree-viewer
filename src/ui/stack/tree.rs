@@ -5,8 +5,7 @@ mod store;
 
 use core::cmp::Ordering;
 use glib::clone;
-use glib::translate::{ToGlibPtr, ToGlib};
-use std::ops::Deref;
+use glib::translate::{ToGlibPtr};
 
 use super::super::super::ui;
 use super::super::prelude::*;
