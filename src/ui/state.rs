@@ -10,12 +10,13 @@ use super::prelude::*;
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(i32)]
 pub enum SortOrder {
-    NixStoreOutput = 0,
-    Alphabetical,
+    NixStoreOrigOutput = 0,
+    AlphabeticalHash,
+    AlphabeticalDrvName,
 }
 
 impl Default for SortOrder {
-    fn default() -> Self { SortOrder::NixStoreOutput }
+    fn default() -> Self { SortOrder::NixStoreOrigOutput }
 }
 
 impl TryFrom<u32> for SortOrder {
@@ -23,8 +24,9 @@ impl TryFrom<u32> for SortOrder {
 
     fn try_from(value: u32) -> Result<SortOrder, u32> {
         match value {
-            0 => Ok(SortOrder::NixStoreOutput),
-            1 => Ok(SortOrder::Alphabetical),
+            0 => Ok(SortOrder::NixStoreOrigOutput),
+            1 => Ok(SortOrder::AlphabeticalHash),
+            2 => Ok(SortOrder::AlphabeticalDrvName),
             n => Err(n),
         }
     }
