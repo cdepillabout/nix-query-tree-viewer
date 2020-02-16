@@ -96,4 +96,8 @@ impl State {
     pub fn get_tree_model_sort(&self) -> gtk::TreeModelSort {
         self.builder.get_object_expect("treeModelSort")
     }
+
+    pub fn get_sort_combo_box(&self) -> gtk::ComboBoxText {
+        self.builder.get_object_expect("sortComboBox")
+    }
 }

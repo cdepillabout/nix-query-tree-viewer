@@ -120,19 +120,43 @@
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="halign">end</property>
             <property name="margin_right">1</property>
             <property name="margin_top">1</property>
             <property name="margin_bottom">1</property>
             <child>
-              <object class="GtkSearchEntry" id="searchEntry">
-                <property name="width_request">500</property>
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="margin_right">2</property>
-                <property name="primary_icon_name">edit-find-symbolic</property>
-                <property name="primary_icon_activatable">False</property>
-                <property name="primary_icon_sensitive">False</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Sort:</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="sortComboBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="active">0</property>
+                    <property name="active_id">sortComboBoxNixStoreOutput</property>
+                    <items>
+                      <item id="sortComboBoxNixStoreOutput" translatable="yes">nix-store Output</item>
+                      <item id="sortComboBoxAlphabetical" translatable="yes">Alphabetical</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -141,13 +165,41 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="searchButton">
-                <property name="label" translatable="yes">search</property>
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="image">searchButtonImage</property>
-                <property name="always_show_image">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">end</property>
+                <property name="hexpand">True</property>
+                <child>
+                  <object class="GtkSearchEntry" id="searchEntry">
+                    <property name="width_request">500</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="primary_icon_name">edit-find-symbolic</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="searchButton">
+                    <property name="label" translatable="yes">Search</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="image">searchButtonImage</property>
+                    <property name="always_show_image">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -198,7 +250,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeViewColumnItem">
-                        <property name="title" translatable="yes">item</property>
+                        <property name="title" translatable="yes">Item</property>
                         <child>
                           <object class="GtkCellRendererText" id="cellRendererTextItem"/>
                         </child>
@@ -206,7 +258,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeViewColumnRepeat">
-                        <property name="title" translatable="yes">repeat</property>
+                        <property name="title" translatable="yes">Repeat</property>
                         <child>
                           <object class="GtkCellRendererText" id="cellRendererTextRepeat">
                             <property name="foreground">blue</property>
