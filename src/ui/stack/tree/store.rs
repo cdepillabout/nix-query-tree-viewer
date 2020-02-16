@@ -16,7 +16,7 @@ fn insert_child(
     let drv: &NixQueryDrv = &item.0;
     let drv_str = drv.to_string();
     let recurse_str = if item.1 == Recurse::Yes {
-        "go to first instance"
+        "go to tree instance"
     } else {
         ""
     };

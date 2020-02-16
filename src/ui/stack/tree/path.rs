@@ -160,16 +160,21 @@ impl GtkChildTreeIter {
 }
 
 // TODO: Is this function correct?
-pub fn goto(tree_view: gtk::TreeView, first_path: &tree::Path) {
-    let first_gtk_path = GtkChildTreePath::from_path(first_path);
+pub fn goto(state: &ui::State, first_path: &tree::Path) {
+    let tree_view = state.get_tree_view();
+
+    let tree_model_sort = state.get_tree_model_sort();
+    let child_tree_path = GtkChildTreePath::from_path(first_path);
+    let parent_tree_path = child_tree_path.into_parent(tree_model_sort);
+
     let col = tree_view.get_column(Column::Item as i32);
 
     // Open recursively upward from this new path.
-    tree_view.expand_to_path(&first_gtk_path.get());
+    tree_view.expand_to_path(&parent_tree_path.get());
 
     // Scroll to the newly opened path.
     tree_view.scroll_to_cell(
-        Some(&first_gtk_path.get()),
+        Some(&parent_tree_path.get()),
         col.as_ref(),
         true,
         0.5,
@@ -178,7 +183,7 @@ pub fn goto(tree_view: gtk::TreeView, first_path: &tree::Path) {
 
     let tree_selection: gtk::TreeSelection = tree_view.get_selection();
     // Select the newly opened path.
-    tree_selection.select_path(&first_gtk_path.get());
+    tree_selection.select_path(&parent_tree_path.get());
 }
 
 fn event_button_to_parent_tree_path_column(

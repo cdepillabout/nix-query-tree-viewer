@@ -7,10 +7,11 @@ use crate::nix_query_tree::exec_nix_store::NixStoreRes;
 use crate::nix_query_tree::NixQueryEntry;
 
 fn toggle_row_expanded(
-    tree_view: gtk::TreeView,
+    state: &ui::State,
     tree_path: gtk::TreePath,
     recurse: bool,
 ) {
+    let tree_view = state.get_tree_view();
     if tree_view.row_expanded(&tree_path) {
         tree_view.collapse_row(&tree_path);
     } else {
@@ -20,7 +21,7 @@ fn toggle_row_expanded(
 
 // Warning: This function assumes that nix_query_entry actually exists in NixStoreRes
 fn go_to_path_for_query_entry(
-    tree_view: gtk::TreeView,
+    state: &ui::State,
     nix_store_res: &NixStoreRes,
     nix_query_entry: &NixQueryEntry,
 ) {
@@ -31,7 +32,7 @@ fn go_to_path_for_query_entry(
             "Nothing in our map for this drv.  This should hever happen."
         ),
         Some(first_path) => {
-            path::goto(tree_view, &first_path);
+            path::goto(state, &first_path);
         }
     }
 }
@@ -41,14 +42,12 @@ fn go_to_curr_path_for_query_entry(
     nix_query_entry: &NixQueryEntry,
 ) {
     if let Some(nix_store_res) = &*state.read_nix_store_res() {
-        let tree_view = state.get_tree_view();
-        go_to_path_for_query_entry(tree_view, nix_store_res, nix_query_entry);
+        go_to_path_for_query_entry(state, nix_store_res, nix_query_entry);
     }
 }
 
 fn handle_row_activated(
     state: &ui::State,
-    tree_view: gtk::TreeView,
     tree_path: gtk::TreePath,
     tree_view_column: gtk::TreeViewColumn,
 ) {
@@ -62,13 +61,13 @@ fn handle_row_activated(
         ) {
             Some(nix_query_entry) => {
                 go_to_path_for_query_entry(
-                    tree_view,
+                    state,
                     nix_store_res,
                     &nix_query_entry,
                 )
             }
             _ => {
-                toggle_row_expanded(tree_view.clone(), tree_path.clone(), false)
+                toggle_row_expanded(state, tree_path.clone(), false)
             }
         }
     }
@@ -157,7 +156,7 @@ fn create_goto_first_instance_menu_item(
         nix_store_res,
     ) {
         let goto_first_instance_menu_item =
-            gtk::MenuItem::new_with_label("Go to first instance");
+            gtk::MenuItem::new_with_label("Go to tree instance");
 
         goto_first_instance_menu_item.connect_activate(
             clone!(@strong state, @strong nix_query_entry =>
@@ -216,10 +215,9 @@ fn handle_button_press_event(
 
 pub fn connect(state: &ui::State) {
     state.get_tree_view().connect_row_activated(
-        clone!(@strong state => move |tree_view_ref, tree_path, tree_view_column| {
+        clone!(@strong state => move |_, tree_path, tree_view_column| {
             handle_row_activated(
                 &state,
-                tree_view_ref.clone(),
                 tree_path.clone(),
                 tree_view_column.clone(),
             );
