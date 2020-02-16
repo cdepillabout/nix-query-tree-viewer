@@ -4,26 +4,17 @@ use glib::clone;
 use super::super::ui;
 
 fn handle_search(state: &ui::State) {
-
     let search_entry = state.get_search_entry();
     let search_text = search_entry.get_buffer().get_text();
 
     ui::search_for(state, std::path::Path::new(&search_text));
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[repr(i32)]
-pub enum SortOrder {
-    NixStoreOutput = 0,
-    Alphabetical,
-}
-
 fn handle_select_sort_order(state: &ui::State) {
     let combo_box = state.get_sort_combo_box();
     let active_id: u32 = combo_box.get_active().expect("There should always be something active in the combo box.");
-    println!("in handle_select_sort_order, active = {:?}", active_id);
-
-
+    let sort_order = ui::SortOrder::try_from(active_id).expect("active id is not a valid value for SortOrder");
+    ui::set_sort_order(state, sort_order);
 }
 
 pub fn connect_signals(state: &ui::State) {

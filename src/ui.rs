@@ -8,13 +8,13 @@ mod toolbar;
 
 pub mod prelude;
 
-pub use state::{Message, State};
+pub use state::{Message, SortOrder, State};
 
 use glib::clone;
 use std::path::Path;
 use std::thread;
 
-use super::nix_query_tree::exec_nix_store::{NixStoreErr, NixStoreRes};
+use super::nix_query_tree::exec_nix_store::{NixStoreErr};
 
 use prelude::*;
 
@@ -64,6 +64,12 @@ fn search_for(state: &State, nix_store_path: &Path) {
     }));
 }
 
+fn set_sort_order(state: &State, new_sort_order: SortOrder) {
+    state.write_sort_order(new_sort_order);
+
+    stack::change_sort_order(state);
+}
+
 fn redisplay_data(state: &State) {
     statusbar::clear(state);
     stack::redisplay_data(state);
@@ -92,12 +98,7 @@ fn handle_msg_recv(state: &State, msg: Message) {
                 );
             }
             Ok(nix_store_res) => {
-                // Update state with the new nix_store_res.  This needs to be in a block so that
-                // the RwLock is released before we call redisplay_data.
-                {
-                    let option_nix_store_res: &mut Option<NixStoreRes> = &mut *state.nix_store_res.write().unwrap();
-                    *option_nix_store_res = Some(nix_store_res);
-                }
+                state.write_nix_store_res(nix_store_res);
                 redisplay_data(state);
             }
         },

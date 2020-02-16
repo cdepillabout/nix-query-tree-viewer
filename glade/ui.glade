@@ -145,10 +145,11 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="active">0</property>
-                    <property name="active_id">sortComboBoxNixStoreOutput</property>
+                    <property name="active_id">sortComboBoxNixStoreOriginalOutput</property>
                     <items>
-                      <item id="sortComboBoxNixStoreOutput" translatable="yes">nix-store Output</item>
-                      <item id="sortComboBoxAlphabetical" translatable="yes">Alphabetical</item>
+                      <item id="sortComboBoxNixStoreOutput" translatable="yes">nix-store Original Output</item>
+                      <item id="sortComboBoxAlphabetical" translatable="yes">Alphabetical by Hash</item>
+                      <item id="sortComboBoxAlphabeticalDrvName" translatable="yes">Alphabetical by Drv Name</item>
                     </items>
                   </object>
                   <packing>

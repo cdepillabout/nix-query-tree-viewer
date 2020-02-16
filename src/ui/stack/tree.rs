@@ -5,7 +5,7 @@ mod store;
 
 use core::cmp::Ordering;
 use glib::clone;
-use glib::translate::ToGlibPtr;
+use glib::translate::{ToGlibPtr, ToGlib};
 use std::ops::Deref;
 
 use super::super::super::ui;
@@ -37,50 +37,11 @@ pub fn setup(state: &ui::State) {
     columns::setup(state);
 
     signals::connect(state);
+
+    set_sort_function(state);
 }
 
-// fn set_sort_func(
-//     &self,
-//     sort_func: Option<Box_<dyn Fn(&ListBoxRow, &ListBoxRow) -> i32 + 'static>>,
-// ) {
-//     let sort_func_data: Box_<Option<Box_<dyn Fn(&ListBoxRow, &ListBoxRow) -> i32 + 'static>>> =
-//         Box_::new(sort_func);
-//     unsafe extern "C" fn sort_func_func(
-//         row1: *mut gtk_sys::GtkListBoxRow,
-//         row2: *mut gtk_sys::GtkListBoxRow,
-//         user_data: glib_sys::gpointer,
-//     ) -> libc::c_int {
-//         let row1 = from_glib_borrow(row1);
-//         let row2 = from_glib_borrow(row2);
-//         let callback: &Option<Box_<dyn Fn(&ListBoxRow, &ListBoxRow) -> i32 + 'static>> =
-//             &*(user_data as *mut _);
-//         let res = if let Some(ref callback) = *callback {
-//             callback(&row1, &row2)
-//         } else {
-//             panic!("cannot get closure...")
-//         };
-//         res
-//     }
-//     let sort_func = if sort_func_data.is_some() {
-//         Some(sort_func_func as _)
-//     } else {
-//         None
-//     };
-//     unsafe extern "C" fn destroy_func(data: glib_sys::gpointer) {
-//         let _callback: Box_<Option<Box_<dyn Fn(&ListBoxRow, &ListBoxRow) -> i32 + 'static>>> =
-//             Box_::from_raw(data as *mut _);
-//     }
-//     let destroy_call3 = Some(destroy_func as _);
-//     unsafe {
-//         gtk_sys::gtk_list_box_set_sort_func(
-//             self.as_ref().to_glib_none().0,
-//             sort_func,
-//             Box_::into_raw(sort_func_data) as *mut _,
-//             destroy_call3,
-//         );
-//     }
-// }
-
+/// Low-level (unsafe) function for setting the sorting function.
 fn set_sort_func<O: IsA<gtk::TreeSortable>>(
     tree_model_sort: &O,
     sort_func: Box<dyn Fn(&gtk::TreeModel, &gtk::TreeIter, &gtk::TreeIter) -> i32 + 'static>,
@@ -123,28 +84,23 @@ fn set_sort_func<O: IsA<gtk::TreeSortable>>(
     }
 }
 
-// gtk_sys::gtk_tree_sortable_set_default_sort_func(
-//     self.as_ref().to_glib_none().0,
-//     Some(trampoline::<Self, F>),
-//     into_raw(sort_func),
-//     Some(destroy_closure::<Self, F>),
-// )
+pub fn change_sort_order(state: &ui::State) {
+    let tree_model_sort = state.get_tree_model_sort();
 
-// pub unsafe extern "C" fn gtk_tree_sortable_set_sort_func(
-//     sortable: *mut GtkTreeSortable,
-//     sort_func: GtkTreeIterCompareFunc,
-//     user_data: gpointer,
-//     destroy: GDestroyNotify
-// )
+    match *state.read_sort_order() {
+        ui::SortOrder::NixStoreOutput => {
+            tree_model_sort.set_sort_column_id(gtk::SortColumn::Default, gtk::SortType::Ascending);
+        }
+        ui::SortOrder::Alphabetical => {
+            tree_model_sort.set_sort_column_id(gtk::SortColumn::Index(0), gtk::SortType::Ascending);
+        }
+        // ui::SortOrder::HashAlphabetical => {
+        //     tree_model_sort.set_sort_column_id(gtk::SortColumn::Index(0), gtk::SortType::Ascending);
+        // }
+    }
+}
 
-
-pub fn redisplay_data(state: &ui::State) {
-    clear(state);
-    enable(state);
-
-
-    render_nix_store_res(state);
-
+pub fn set_sort_function(state: &ui::State) {
     let tree_model_sort = state.get_tree_model_sort();
 
     set_sort_func(
@@ -177,10 +133,14 @@ pub fn redisplay_data(state: &ui::State) {
             }
         }))
     );
+}
 
-    // TODO: When this is enabled, the right clicks no longer go to the right item.  Maybe I have
-    // to use the child iter thing now???
-    tree_model_sort.set_sort_column_id(gtk::SortColumn::Index(0), gtk::SortType::Ascending);
+
+pub fn redisplay_data(state: &ui::State) {
+    clear(state);
+    enable(state);
+
+    render_nix_store_res(state);
 
     // expand the first row of the tree view
     state

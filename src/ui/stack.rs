@@ -18,6 +18,10 @@ pub fn enable(state: &ui::State) {
     raw::enable(state);
 }
 
+pub fn change_sort_order(state: &ui::State) {
+    tree::change_sort_order(state);
+}
+
 pub fn redisplay_data(state: &ui::State) {
     tree::redisplay_data(&state);
     raw::redisplay_data(&state);

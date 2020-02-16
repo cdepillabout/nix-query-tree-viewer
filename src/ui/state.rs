@@ -6,6 +6,30 @@ use super::super::nix_query_tree::exec_nix_store::{
 use super::builder;
 use super::prelude::*;
 
+/// Sort order for the tree of nix store paths.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(i32)]
+pub enum SortOrder {
+    NixStoreOutput = 0,
+    Alphabetical,
+}
+
+impl Default for SortOrder {
+    fn default() -> Self { SortOrder::NixStoreOutput }
+}
+
+impl TryFrom<u32> for SortOrder {
+    type Error = u32;
+
+    fn try_from(value: u32) -> Result<SortOrder, u32> {
+        match value {
+            0 => Ok(SortOrder::NixStoreOutput),
+            1 => Ok(SortOrder::Alphabetical),
+            n => Err(n),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Message {
     Display(ExecNixStoreRes),
@@ -17,6 +41,7 @@ pub struct State {
     pub builder: gtk::Builder,
     pub sender: glib::Sender<Message>,
     pub nix_store_res: Arc<RwLock<Option<NixStoreRes>>>,
+    pub sort_order: Arc<RwLock<SortOrder>>,
 }
 
 impl State {
@@ -26,11 +51,26 @@ impl State {
             builder: builder::create(),
             sender,
             nix_store_res: Arc::new(RwLock::new(None)),
+            sort_order: Default::default(),
         }
     }
 
     pub fn read_nix_store_res(&self) -> RwLockReadGuard<Option<NixStoreRes>> {
         self.nix_store_res.read().unwrap()
+    }
+
+    pub fn read_sort_order(&self) -> RwLockReadGuard<SortOrder> {
+        self.sort_order.read().unwrap()
+    }
+
+    pub fn write_nix_store_res(&self, new_nix_store_res: NixStoreRes) {
+        let state_option_nix_store_res: &mut Option<NixStoreRes> = &mut *self.nix_store_res.write().unwrap();
+        *state_option_nix_store_res = Some(new_nix_store_res);
+    }
+
+    pub fn write_sort_order(&self, new_sort_order: SortOrder) {
+        let state_sort_order: &mut SortOrder = &mut *self.sort_order.write().unwrap();
+        *state_sort_order = new_sort_order;
     }
 
     pub fn get_app_win(&self) -> gtk::ApplicationWindow {
