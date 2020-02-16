@@ -53,10 +53,11 @@ fn handle_row_activated(
     tree_view_column: gtk::TreeViewColumn,
 ) {
     if let Some(nix_store_res) = &*state.read_nix_store_res() {
-        match path::is_for_real_recurse_column(
+        let parent_tree_path = path::GtkParentTreePath::new(tree_path.clone());
+        match path::is_for_recurse_column_parent(
             state,
             tree_view_column.clone(),
-            tree_path.clone(),
+            parent_tree_path,
             nix_store_res,
         ) {
             Some(nix_query_entry) => {
@@ -92,13 +93,14 @@ fn create_copy_drv_path_menu_item(
     event_button: gdk::EventButton,
     nix_store_res: &NixStoreRes,
 ) {
-    println!("In create_copy_drv_path_menu_item, starting...");
     if let Some(nix_query_entry) = path::nix_query_entry_for_event_button(
         state,
         event_button,
         nix_store_res,
     ) {
-        println!("In create_copy_drv_path_menu_item, nix query entry: {:?}", nix_query_entry);
+
+        println!("In create copy_drv_path_menu_item, got nix_query_entry: {:?}", nix_query_entry);
+
         let copy_drv_path_menu_item =
             gtk::MenuItem::new_with_label("Copy drv path");
 

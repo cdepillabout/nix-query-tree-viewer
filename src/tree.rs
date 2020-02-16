@@ -16,12 +16,12 @@ impl<T> Tree<T> {
         Tree::new(item, vec![])
     }
 
-    pub fn lookup(&self, path: Path) -> Option<&T> {
+    pub fn lookup(&self, path: &Path) -> Option<&T> {
         match path.split_front() {
             None => Some(&self.item),
             Some((index, child_path)) => match self.children.get(index) {
                 None => None,
-                Some(child_tree) => child_tree.lookup(child_path),
+                Some(child_tree) => child_tree.lookup(&child_path),
             },
         }
     }
