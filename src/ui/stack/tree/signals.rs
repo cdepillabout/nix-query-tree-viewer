@@ -97,9 +97,6 @@ fn create_copy_drv_path_menu_item(
         event_button,
         nix_store_res,
     ) {
-
-        println!("In create copy_drv_path_menu_item, got nix_query_entry: {:?}", nix_query_entry);
-
         let copy_drv_path_menu_item =
             gtk::MenuItem::new_with_label("Copy drv path");
 

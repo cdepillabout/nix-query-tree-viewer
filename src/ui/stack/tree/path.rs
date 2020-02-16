@@ -291,36 +291,9 @@ pub fn nix_query_entry_for_event_button(
 ) -> Option<NixQueryEntry> {
     let option_child_tree_path =
         event_button_to_child_tree_path(state, event_button.clone());
-    let option_parent_tree_path =
-        event_button_to_parent_tree_path(state, event_button);
 
-    let tree_model_sort = state.get_tree_model_sort();
-
-    println!(
-        "in nix_query_entry_for_event_button, raw = \n{}\n",
-        nix_store_res.raw
-    );
-    println!(
-        "in nix_query_entry_for_event_button, child_tree_path = {:?}",
-        option_child_tree_path
-    );
-    println!(
-        "in nix_query_entry_for_event_button, parent_tree_path = {:?}",
-        option_parent_tree_path
-    );
     let option_child_query_entry = option_child_tree_path
         .and_then(|x| x.nix_store_res_lookup(nix_store_res));
-    let option_parent_query_entry = option_parent_tree_path
-        .and_then(|x| x.nix_store_res_lookup(tree_model_sort, nix_store_res));
-    println!(
-        "in nix_query_entry_for_event_button, child_query_entry = {:?}",
-        option_child_query_entry
-    );
-    println!(
-        "in nix_query_entry_for_event_button, parent_query_entry = {:?}",
-        option_parent_query_entry
-    );
-    println!("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
     option_child_query_entry
 }
