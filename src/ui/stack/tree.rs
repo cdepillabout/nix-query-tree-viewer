@@ -121,7 +121,6 @@ pub fn set_sort_function(state: &ui::State) {
 
                 let option_nix_query_entry_a: Option<crate::nix_query_tree::NixQueryEntry> =
                     child_iter_a.nix_store_res_lookup(tree_store.clone(), &nix_store_res);
-
                 let option_nix_query_entry_b: Option<crate::nix_query_tree::NixQueryEntry> =
                     child_iter_b.nix_store_res_lookup(tree_store.clone(), &nix_store_res);
 
@@ -136,8 +135,8 @@ pub fn set_sort_function(state: &ui::State) {
                                 nix_query_entry_a.path().cmp(nix_query_entry_b.path())
                             }
                             ui::SortOrder::AlphabeticalDrvName => {
-                                // TODO: Actually compare the drv names (without the hashes) here.
-                                nix_query_entry_b.path().cmp(nix_query_entry_a.path())
+                                // nix_query_entry_b.path().cmp(nix_query_entry_a.path())
+                                nix_query_entry_a.cmp_hash(&nix_query_entry_b)
                             }
                         }
                     }

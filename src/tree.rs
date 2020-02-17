@@ -210,12 +210,12 @@ mod tests {
         let path5 = vec![2, 0, 3].into();
         let path6 = vec![0, 1, 2, 3, 4].into();
 
-        assert_eq!(tree.lookup(path1), None);
-        assert_eq!(tree.lookup(path2), None);
-        assert_eq!(tree.lookup(path3), None);
-        assert_eq!(tree.lookup(path4), None);
-        assert_eq!(tree.lookup(path5), None);
-        assert_eq!(tree.lookup(path6), None);
+        assert_eq!(tree.lookup(&path1), None);
+        assert_eq!(tree.lookup(&path2), None);
+        assert_eq!(tree.lookup(&path3), None);
+        assert_eq!(tree.lookup(&path4), None);
+        assert_eq!(tree.lookup(&path5), None);
+        assert_eq!(tree.lookup(&path6), None);
     }
 
     #[test]
@@ -250,14 +250,14 @@ mod tests {
         let path2_1_0 = vec![2, 1, 0].into();
         let path2_1_1 = vec![2, 1, 1].into();
 
-        assert_eq!(tree.lookup(path_root).map(String::deref), Some("root"));
-        assert_eq!(tree.lookup(path0).map(String::deref), Some("0"));
-        assert_eq!(tree.lookup(path1).map(String::deref), Some("1"));
-        assert_eq!(tree.lookup(path2).map(String::deref), Some("2"));
-        assert_eq!(tree.lookup(path2_0).map(String::deref), Some("2-0"));
-        assert_eq!(tree.lookup(path2_1).map(String::deref), Some("2-1"));
-        assert_eq!(tree.lookup(path2_1_0).map(String::deref), Some("2-1-0"));
-        assert_eq!(tree.lookup(path2_1_1).map(String::deref), Some("2-1-1"));
+        assert_eq!(tree.lookup(&path_root).map(String::deref), Some("root"));
+        assert_eq!(tree.lookup(&path0).map(String::deref), Some("0"));
+        assert_eq!(tree.lookup(&path1).map(String::deref), Some("1"));
+        assert_eq!(tree.lookup(&path2).map(String::deref), Some("2"));
+        assert_eq!(tree.lookup(&path2_0).map(String::deref), Some("2-0"));
+        assert_eq!(tree.lookup(&path2_1).map(String::deref), Some("2-1"));
+        assert_eq!(tree.lookup(&path2_1_0).map(String::deref), Some("2-1-0"));
+        assert_eq!(tree.lookup(&path2_1_1).map(String::deref), Some("2-1-1"));
     }
 
     #[test]
