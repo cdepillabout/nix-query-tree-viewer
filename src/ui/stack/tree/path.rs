@@ -200,7 +200,6 @@ impl TreeViewCol {
         TreeViewCol::Item,
         TreeViewCol::Recurse,
     ];
-
     const INDICIES: [usize; 2] = [
         TreeViewCol::Item as usize,
         TreeViewCol::Recurse as usize,
@@ -218,7 +217,6 @@ impl TreeViewCol {
     }
 }
 
-// TODO: Is this function correct?
 pub fn goto(state: &ui::State, first_path: &tree::Path) {
     let tree_view = state.get_tree_view();
 

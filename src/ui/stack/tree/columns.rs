@@ -13,8 +13,6 @@ pub enum Column {
     OnlyDrvName,
 }
 
-// Is there some way to derive these types of things?
-
 impl TryFrom<usize> for Column {
     type Error = usize;
 
@@ -28,6 +26,7 @@ impl TryFrom<usize> for Column {
 }
 
 impl Column {
+    // Is there some way to derive these types of things?
     const LIST: [Column; 4] = [
         Column::FullPath,
         Column::Recurse,
