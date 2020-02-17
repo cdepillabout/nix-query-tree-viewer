@@ -64,9 +64,11 @@ impl NixQueryDrv {
         match option_dash_index {
             None => drv_str.into_owned(),
             Some(dash_index) => {
-                let option_just_drv_name = drv_str.get(dash_index + 1 ..);
+                let option_just_drv_name = drv_str.get(dash_index + 1..);
                 match option_just_drv_name {
-                    None => panic!("Nix paths will always have a dash in them."),
+                    None => {
+                        panic!("Nix paths will always have a dash in them.")
+                    }
                     Some(drv_name) => drv_name.to_string(),
                 }
             }

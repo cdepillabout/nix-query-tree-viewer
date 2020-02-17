@@ -59,16 +59,12 @@ fn handle_row_activated(
             parent_tree_path,
             nix_store_res,
         ) {
-            Some(nix_query_entry) => {
-                go_to_path_for_query_entry(
-                    state,
-                    nix_store_res,
-                    &nix_query_entry,
-                )
-            }
-            _ => {
-                toggle_row_expanded(state, tree_path.clone(), false)
-            }
+            Some(nix_query_entry) => go_to_path_for_query_entry(
+                state,
+                nix_store_res,
+                &nix_query_entry,
+            ),
+            _ => toggle_row_expanded(state, tree_path.clone(), false),
         }
     }
 }
