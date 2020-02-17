@@ -132,11 +132,10 @@ pub fn set_sort_function(state: &ui::State) {
                                 Ordering::Equal
                             }
                             ui::SortOrder::AlphabeticalHash => {
-                                nix_query_entry_a.path().cmp(nix_query_entry_b.path())
+                                nix_query_entry_a.cmp_hash(&nix_query_entry_b)
                             }
                             ui::SortOrder::AlphabeticalDrvName => {
-                                // nix_query_entry_b.path().cmp(nix_query_entry_a.path())
-                                nix_query_entry_a.cmp_hash(&nix_query_entry_b)
+                                nix_query_entry_a.cmp_drv_name(&nix_query_entry_b)
                             }
                         }
                     }

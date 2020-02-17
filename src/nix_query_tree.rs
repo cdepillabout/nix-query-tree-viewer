@@ -23,6 +23,10 @@ impl NixQueryDrv {
         self.0.cmp(&other.0)
     }
 
+    pub fn cmp_drv_name(&self, other: &Self) -> std::cmp::Ordering {
+        self.drv_name().cmp(&other.drv_name())
+    }
+
     /// Pull out a derivation name from a `NixQueryDrv`.
     ///
     /// ```
@@ -83,6 +87,10 @@ impl NixQueryEntry {
 
     pub fn cmp_hash(&self, other: &Self) -> std::cmp::Ordering {
         self.0.cmp_hash(&other.0)
+    }
+
+    pub fn cmp_drv_name(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.cmp_drv_name(&other.0)
     }
 }
 
