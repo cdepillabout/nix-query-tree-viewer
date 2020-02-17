@@ -49,13 +49,25 @@ pub fn change_view_style(state: &ui::State) {
 
     match *state.read_view_style() {
         ui::ViewStyle::FullPath => {
-            column.add_attribute(&item_renderer, "text", Column::FullPath as i32);
+            column.add_attribute(
+                &item_renderer,
+                "text",
+                Column::FullPath as i32,
+            );
         }
         ui::ViewStyle::HashAndDrvName => {
-            column.add_attribute(&item_renderer, "text", Column::HashAndDrvName as i32);
+            column.add_attribute(
+                &item_renderer,
+                "text",
+                Column::HashAndDrvName as i32,
+            );
         }
         ui::ViewStyle::OnlyDrvName => {
-            column.add_attribute(&item_renderer, "text", Column::OnlyDrvName as i32);
+            column.add_attribute(
+                &item_renderer,
+                "text",
+                Column::OnlyDrvName as i32,
+            );
         }
     }
 

@@ -194,16 +194,10 @@ fn get_tree_view_column_pos(
 }
 
 impl TreeViewCol {
-
     // Is there some way to derive these types of things?
-    const LIST: [TreeViewCol; 2] = [
-        TreeViewCol::Item,
-        TreeViewCol::Recurse,
-    ];
-    const INDICIES: [usize; 2] = [
-        TreeViewCol::Item as usize,
-        TreeViewCol::Recurse as usize,
-    ];
+    const LIST: [TreeViewCol; 2] = [TreeViewCol::Item, TreeViewCol::Recurse];
+    const INDICIES: [usize; 2] =
+        [TreeViewCol::Item as usize, TreeViewCol::Recurse as usize];
 
     pub fn from_gtk(
         tree_view: gtk::TreeView,

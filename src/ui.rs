@@ -14,7 +14,7 @@ use glib::clone;
 use std::path::Path;
 use std::thread;
 
-use super::nix_query_tree::exec_nix_store::{NixStoreErr};
+use super::nix_query_tree::exec_nix_store::NixStoreErr;
 
 use prelude::*;
 
@@ -121,13 +121,9 @@ fn app_activate(app: gtk::Application) {
     window.set_application(Some(&state.app));
 
     css::setup(window.clone().upcast());
-
     menu::setup(&state);
-
     toolbar::setup(&state);
-
     stack::setup(&state);
-
 
     window.show_all();
 

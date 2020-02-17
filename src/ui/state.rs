@@ -16,7 +16,9 @@ pub enum SortOrder {
 }
 
 impl Default for SortOrder {
-    fn default() -> Self { SortOrder::NixStoreOrigOutput }
+    fn default() -> Self {
+        SortOrder::NixStoreOrigOutput
+    }
 }
 
 impl TryFrom<u32> for SortOrder {
@@ -42,7 +44,9 @@ pub enum ViewStyle {
 }
 
 impl Default for ViewStyle {
-    fn default() -> Self { ViewStyle::FullPath }
+    fn default() -> Self {
+        ViewStyle::FullPath
+    }
 }
 
 impl TryFrom<u32> for ViewStyle {
@@ -98,17 +102,20 @@ impl State {
     }
 
     pub fn write_nix_store_res(&self, new_nix_store_res: NixStoreRes) {
-        let state_option_nix_store_res: &mut Option<NixStoreRes> = &mut *self.nix_store_res.write().unwrap();
+        let state_option_nix_store_res: &mut Option<NixStoreRes> =
+            &mut *self.nix_store_res.write().unwrap();
         *state_option_nix_store_res = Some(new_nix_store_res);
     }
 
     pub fn write_sort_order(&self, new_sort_order: SortOrder) {
-        let state_sort_order: &mut SortOrder = &mut *self.sort_order.write().unwrap();
+        let state_sort_order: &mut SortOrder =
+            &mut *self.sort_order.write().unwrap();
         *state_sort_order = new_sort_order;
     }
 
     pub fn write_view_style(&self, new_view_style: ViewStyle) {
-        let state_view_style: &mut ViewStyle = &mut *self.view_style.write().unwrap();
+        let state_view_style: &mut ViewStyle =
+            &mut *self.view_style.write().unwrap();
         *state_view_style = new_view_style;
     }
 
@@ -148,6 +155,7 @@ impl State {
         self.builder.get_object_expect("treeViewColumnItem")
     }
 
+    #[allow(dead_code)]
     pub fn get_tree_view_column_repeat(&self) -> gtk::TreeViewColumn {
         self.builder.get_object_expect("treeViewColumnRepeat")
     }
@@ -156,6 +164,7 @@ impl State {
         self.builder.get_object_expect("cellRendererTextItem")
     }
 
+    #[allow(dead_code)]
     pub fn get_cell_renderer_text_repeat(&self) -> gtk::CellRendererText {
         self.builder.get_object_expect("cellRendererTextRepeat")
     }
