@@ -159,6 +159,65 @@ impl GtkChildTreeIter {
     }
 }
 
+/// These are the columns that correspond to the actual columns in the GtkTreeView.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(i32)]
+pub enum TreeViewCol {
+    Item = 0,
+    Recurse,
+}
+
+impl TryFrom<usize> for TreeViewCol {
+    type Error = usize;
+
+    fn try_from(value: usize) -> Result<TreeViewCol, usize> {
+        if value < Self::INDICIES.len() {
+            Ok(Self::LIST[value])
+        } else {
+            Err(value)
+        }
+    }
+}
+
+fn get_tree_view_column_pos(
+    tree_view: gtk::TreeView,
+    tree_view_column: gtk::TreeViewColumn,
+) -> usize {
+    let all_tree_view_columns = tree_view.get_columns();
+    let option_pos = all_tree_view_columns
+        .iter()
+        .position(|col| *col == tree_view_column);
+    match option_pos {
+        None => panic!("No column matching id.  This should never happen."),
+        Some(pos) => pos,
+    }
+}
+
+impl TreeViewCol {
+
+    // Is there some way to derive these types of things?
+    const LIST: [TreeViewCol; 2] = [
+        TreeViewCol::Item,
+        TreeViewCol::Recurse,
+    ];
+
+    const INDICIES: [usize; 2] = [
+        TreeViewCol::Item as usize,
+        TreeViewCol::Recurse as usize,
+    ];
+
+    pub fn from_gtk(
+        tree_view: gtk::TreeView,
+        tree_view_column: gtk::TreeViewColumn,
+    ) -> Option<Column> {
+        let column_pos: usize = get_tree_view_column_pos(
+            tree_view.clone(),
+            tree_view_column.clone(),
+        );
+        Column::try_from(column_pos).ok()
+    }
+}
+
 // TODO: Is this function correct?
 pub fn goto(state: &ui::State, first_path: &tree::Path) {
     let tree_view = state.get_tree_view();
@@ -167,7 +226,7 @@ pub fn goto(state: &ui::State, first_path: &tree::Path) {
     let child_tree_path = GtkChildTreePath::from_path(first_path);
     let parent_tree_path = child_tree_path.into_parent(tree_model_sort);
 
-    let col = tree_view.get_column(Column::Item as i32);
+    let col = tree_view.get_column(TreeViewCol::Item as i32);
 
     // Open recursively upward from this new path.
     tree_view.expand_to_path(&parent_tree_path.get());
@@ -240,7 +299,7 @@ fn is_for_recurse_column_child(
 ) -> Option<NixQueryEntry> {
     let tree_view = state.get_tree_view();
     let option_column =
-        Column::from_gtk(tree_view.clone(), tree_view_column.clone());
+        TreeViewCol::from_gtk(tree_view.clone(), tree_view_column.clone());
     let option_nix_query_entry_is_recurse = child_tree_path
         .nix_store_res_lookup(nix_store_res)
         .filter(|nix_query_entry| nix_query_entry.1 == Recurse::Yes);

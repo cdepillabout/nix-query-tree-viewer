@@ -15,6 +15,8 @@ fn insert_child(
     let Tree { item, children }: &Tree<NixQueryEntry> = child;
     let drv: &NixQueryDrv = &item.0;
     let drv_str = drv.to_string();
+    let hash_and_drv_name = drv.hash_and_drv_name();
+    let only_drv_name = drv.drv_name();
     let recurse_str = if item.1 == Recurse::Yes {
         "go to tree instance"
     } else {
@@ -23,12 +25,11 @@ fn insert_child(
     let this_iter: gtk::TreeIter = tree_store.insert_with_values(
         parent.as_ref(),
         None,
-        // &columns::INDICIES
-        //     .iter()
-        //     .map(|&i| i as u32)
-        //     .collect::<Vec<u32>>(),
-        &vec!(0,1,2),
-        &[&drv_str, &recurse_str, &"yo"],
+        &columns::Column::INDICIES
+            .iter()
+            .map(|&i| i as u32)
+            .collect::<Vec<u32>>(),
+        &[&drv_str, &recurse_str, &hash_and_drv_name, &only_drv_name],
     );
     insert_children(tree_store, this_iter, children);
 }

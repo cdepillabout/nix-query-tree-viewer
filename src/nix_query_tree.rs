@@ -27,6 +27,23 @@ impl NixQueryDrv {
         self.drv_name().cmp(&other.drv_name())
     }
 
+    /// Pull out a the hash and derivation name from a `NixQueryDrv`
+    ///
+    /// ```
+    /// use nix_query_tree_viewer::nix_query_tree::NixQueryDrv;
+    ///
+    /// let nix_query_drv =
+    ///     NixQueryDrv::from("/nix/store/az4kl5slhbkmmy4vj98z3hzxxkan7zza-gnugrep-3.3");
+    /// assert_eq!(
+    ///     nix_query_drv.hash_and_drv_name(),
+    ///     String::from("az4kl5slhbkmmy4vj98z3hzxxkan7zza-gnugrep-3.3")
+    /// );
+    /// ```
+    pub fn hash_and_drv_name(&self) -> String {
+        let drv_str = self.0.to_string_lossy();
+        String::from((drv_str).trim_start_matches("/nix/store/"))
+    }
+
     /// Pull out a derivation name from a `NixQueryDrv`.
     ///
     /// ```
@@ -91,6 +108,14 @@ impl NixQueryEntry {
 
     pub fn cmp_drv_name(&self, other: &Self) -> std::cmp::Ordering {
         self.0.cmp_drv_name(&other.0)
+    }
+
+    pub fn hash_and_drv_name(&self) -> String {
+        self.0.hash_and_drv_name()
+    }
+
+    pub fn drv_name(&self) -> String {
+        self.0.drv_name()
     }
 }
 
