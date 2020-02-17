@@ -33,8 +33,6 @@ fn render_nix_store_res(state: &ui::State) {
 }
 
 pub fn setup(state: &ui::State) {
-    columns::setup(state);
-
     signals::connect(state);
 }
 

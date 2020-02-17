@@ -75,5 +75,3 @@ pub fn change_view_style(state: &ui::State) {
     // redraw.
     state.get_tree_view().queue_draw();
 }
-
-pub fn setup(state: &ui::State) {}

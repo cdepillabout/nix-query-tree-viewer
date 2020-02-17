@@ -106,6 +106,7 @@ impl GtkParentTreePath {
         GtkChildTreePath::new(parent_tree_path)
     }
 
+    #[allow(dead_code)]
     pub fn from_path(
         tree_model_sort: gtk::TreeModelSort,
         path: &tree::Path,
@@ -113,10 +114,12 @@ impl GtkParentTreePath {
         GtkChildTreePath::from_path(path).into_parent(tree_model_sort)
     }
 
+    #[allow(dead_code)]
     pub fn to_path(&self, tree_model_sort: gtk::TreeModelSort) -> tree::Path {
         self.into_child(tree_model_sort).to_path()
     }
 
+    #[allow(dead_code)]
     pub fn nix_query_tree_lookup(
         &self,
         tree_model_sort: gtk::TreeModelSort,
@@ -126,6 +129,7 @@ impl GtkParentTreePath {
             .nix_query_tree_lookup(nix_query_tree)
     }
 
+    #[allow(dead_code)]
     pub fn nix_store_res_lookup(
         &self,
         tree_model_sort: gtk::TreeModelSort,
@@ -272,14 +276,6 @@ fn event_button_to_child_tree_path(
     event_button: gdk::EventButton,
 ) -> Option<GtkChildTreePath> {
     event_button_to_child_tree_path_column(state, event_button)
-        .map(|tuple| tuple.0)
-}
-
-fn event_button_to_parent_tree_path(
-    state: &ui::State,
-    event_button: gdk::EventButton,
-) -> Option<GtkParentTreePath> {
-    event_button_to_parent_tree_path_column(state, event_button)
         .map(|tuple| tuple.0)
 }
 
