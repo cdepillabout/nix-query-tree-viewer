@@ -36,8 +36,6 @@ pub fn setup(state: &ui::State) {
     columns::setup(state);
 
     signals::connect(state);
-
-    set_sort_function(state);
 }
 
 /// Low-level (unsafe) function for setting the sorting function.
