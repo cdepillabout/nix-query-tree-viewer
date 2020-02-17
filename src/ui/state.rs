@@ -32,6 +32,32 @@ impl TryFrom<u32> for SortOrder {
     }
 }
 
+/// View style for an individual nix store path.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(i32)]
+pub enum ViewStyle {
+    FullPath = 0,
+    HashAndDrvName,
+    OnlyDrvName,
+}
+
+impl Default for ViewStyle {
+    fn default() -> Self { ViewStyle::FullPath }
+}
+
+impl TryFrom<u32> for ViewStyle {
+    type Error = u32;
+
+    fn try_from(value: u32) -> Result<ViewStyle, u32> {
+        match value {
+            0 => Ok(ViewStyle::FullPath),
+            1 => Ok(ViewStyle::HashAndDrvName),
+            2 => Ok(ViewStyle::OnlyDrvName),
+            n => Err(n),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Message {
     Display(ExecNixStoreRes),
@@ -44,6 +70,7 @@ pub struct State {
     pub sender: glib::Sender<Message>,
     pub nix_store_res: Arc<RwLock<Option<NixStoreRes>>>,
     pub sort_order: Arc<RwLock<SortOrder>>,
+    pub view_style: Arc<RwLock<ViewStyle>>,
 }
 
 impl State {
@@ -54,6 +81,7 @@ impl State {
             sender,
             nix_store_res: Arc::new(RwLock::new(None)),
             sort_order: Default::default(),
+            view_style: Default::default(),
         }
     }
 
@@ -65,6 +93,10 @@ impl State {
         self.sort_order.read().unwrap()
     }
 
+    pub fn read_view_style(&self) -> RwLockReadGuard<ViewStyle> {
+        self.view_style.read().unwrap()
+    }
+
     pub fn write_nix_store_res(&self, new_nix_store_res: NixStoreRes) {
         let state_option_nix_store_res: &mut Option<NixStoreRes> = &mut *self.nix_store_res.write().unwrap();
         *state_option_nix_store_res = Some(new_nix_store_res);
@@ -73,6 +105,11 @@ impl State {
     pub fn write_sort_order(&self, new_sort_order: SortOrder) {
         let state_sort_order: &mut SortOrder = &mut *self.sort_order.write().unwrap();
         *state_sort_order = new_sort_order;
+    }
+
+    pub fn write_view_style(&self, new_view_style: ViewStyle) {
+        let state_view_style: &mut ViewStyle = &mut *self.view_style.write().unwrap();
+        *state_view_style = new_view_style;
     }
 
     pub fn get_app_win(&self) -> gtk::ApplicationWindow {
@@ -119,6 +156,10 @@ impl State {
         self.builder.get_object_expect("cellRendererTextItem")
     }
 
+    pub fn get_cell_renderer_text_example(&self) -> gtk::CellRendererText {
+        self.builder.get_object_expect("cellRendererTextExample")
+    }
+
     pub fn get_cell_renderer_text_repeat(&self) -> gtk::CellRendererText {
         self.builder.get_object_expect("cellRendererTextRepeat")
     }
@@ -141,5 +182,9 @@ impl State {
 
     pub fn get_sort_combo_box(&self) -> gtk::ComboBoxText {
         self.builder.get_object_expect("sortComboBox")
+    }
+
+    pub fn get_view_combo_box(&self) -> gtk::ComboBoxText {
+        self.builder.get_object_expect("viewComboBox")
     }
 }

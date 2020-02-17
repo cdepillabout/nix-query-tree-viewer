@@ -104,6 +104,10 @@ pub fn change_sort_order(state: &ui::State) {
     }
 }
 
+pub fn change_view_style(state: &ui::State) {
+    columns::change_view_style(state);
+}
+
 pub fn set_sort_function(state: &ui::State) {
     let tree_model_sort = state.get_tree_model_sort();
 

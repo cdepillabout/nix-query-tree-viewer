@@ -23,11 +23,12 @@ fn insert_child(
     let this_iter: gtk::TreeIter = tree_store.insert_with_values(
         parent.as_ref(),
         None,
-        &columns::INDICIES
-            .iter()
-            .map(|&i| i as u32)
-            .collect::<Vec<u32>>(),
-        &[&drv_str, &recurse_str],
+        // &columns::INDICIES
+        //     .iter()
+        //     .map(|&i| i as u32)
+        //     .collect::<Vec<u32>>(),
+        &vec!(0,1,2),
+        &[&drv_str, &recurse_str, &"yo"],
     );
     insert_children(tree_store, this_iter, children);
 }

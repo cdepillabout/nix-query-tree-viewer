@@ -8,7 +8,7 @@ mod toolbar;
 
 pub mod prelude;
 
-pub use state::{Message, SortOrder, State};
+pub use state::{Message, SortOrder, State, ViewStyle};
 
 use glib::clone;
 use std::path::Path;
@@ -68,6 +68,12 @@ fn set_sort_order(state: &State, new_sort_order: SortOrder) {
     state.write_sort_order(new_sort_order);
 
     stack::change_sort_order(state);
+}
+
+pub fn set_view_style(state: &State, new_view_style: ViewStyle) {
+    state.write_view_style(new_view_style);
+
+    stack::change_view_style(state);
 }
 
 fn redisplay_data(state: &State) {

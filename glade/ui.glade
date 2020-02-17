@@ -44,6 +44,8 @@
       <column type="gchararray"/>
       <!-- column-name gchararray2 -->
       <column type="gchararray"/>
+      <!-- column-name gchararray3 -->
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkTreeModelSort" id="treeModelSort">
@@ -158,6 +160,36 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">View:</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="viewComboBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="active">0</property>
+                    <property name="active_id">viewComboBoxOnlyDrvName</property>
+                    <items>
+                      <item id="viewComboBoxFullPath" translatable="yes">Full Path</item>
+                      <item id="viewComboBoxHashAndDrvName" translatable="yes">Hash and Drv Name</item>
+                      <item id="viewComboBoxOnlyDrvName" translatable="yes">Only Drv Name</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -251,20 +283,36 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeViewColumnItem">
+                        <property name="resizable">True</property>
                         <property name="title" translatable="yes">Item</property>
                         <child>
                           <object class="GtkCellRendererText" id="cellRendererTextItem"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellRendererTextExample">
+                            <property name="visible">False</property>
+                          </object>
+                          <attributes>
+                            <attribute name="text">2</attribute>
+                          </attributes>
                         </child>
                       </object>
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeViewColumnRepeat">
+                        <property name="resizable">True</property>
                         <property name="title" translatable="yes">Repeat</property>
                         <child>
                           <object class="GtkCellRendererText" id="cellRendererTextRepeat">
                             <property name="foreground">blue</property>
                             <property name="underline">single</property>
                           </object>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
                         </child>
                       </object>
                     </child>

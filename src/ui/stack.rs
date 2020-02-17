@@ -22,6 +22,10 @@ pub fn change_sort_order(state: &ui::State) {
     tree::change_sort_order(state);
 }
 
+pub fn change_view_style(state: &ui::State) {
+    tree::change_view_style(state);
+}
+
 pub fn redisplay_data(state: &ui::State) {
     tree::redisplay_data(&state);
     raw::redisplay_data(&state);
