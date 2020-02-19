@@ -1,6 +1,5 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
-use std::sync::Arc;
 
 use super::{NixQueryEntry, NixQueryPathMap, NixQueryTree};
 use crate::tree;
@@ -28,7 +27,7 @@ impl std::fmt::Display for NixStoreErr {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NixStoreRes {
     pub raw: String,
-    pub tree: Arc<NixQueryTree>,
+    pub tree: NixQueryTree,
     pub map: NixQueryPathMap,
 }
 
@@ -37,7 +36,7 @@ impl NixStoreRes {
         let map: NixQueryPathMap = tree.path_map();
         NixStoreRes {
             raw: raw,
-            tree: Arc::new(tree),
+            tree: tree,
             map: map,
         }
     }
