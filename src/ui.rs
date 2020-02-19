@@ -111,11 +111,11 @@ fn handle_msg_recv(state: &State, msg: Message) {
     }
 }
 
-fn app_activate(app: gtk::Application) {
+fn app_activate(app: &gtk::Application) {
     let (sender, receiver) =
         glib::MainContext::channel(glib::source::PRIORITY_DEFAULT);
 
-    let state = State::new(app, sender);
+    let state = State::new(app, &sender);
 
     let window: gtk::ApplicationWindow = state.get_app_win();
     window.set_application(Some(&state.app));
@@ -127,11 +127,10 @@ fn app_activate(app: gtk::Application) {
 
     window.show_all();
 
-    let state_clone = state.clone();
-    receiver.attach(None, move |msg| {
-        handle_msg_recv(&state_clone, msg);
+    receiver.attach(None, clone!(@strong state => move |msg| {
+        handle_msg_recv(&state, msg);
         glib::source::Continue(true)
-    });
+    }));
 
     // Do the initial search and display the results.
     let opts = crate::opts::Opts::parse_from_args();
@@ -145,7 +144,7 @@ pub fn run() {
     )
     .expect("Application::new failed");
 
-    uiapp.connect_activate(move |app| app_activate(app.clone()));
+    uiapp.connect_activate(move |app| app_activate(&app));
 
     // uiapp.run(&env::args().collect::<Vec<_>>());
     uiapp.run(&[]);
