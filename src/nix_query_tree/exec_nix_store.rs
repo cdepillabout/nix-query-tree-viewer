@@ -29,7 +29,7 @@ impl std::fmt::Display for NixStoreErr {
 pub struct NixStoreRes {
     pub raw: String,
     pub tree: Arc<NixQueryTree>,
-    pub map: Arc<NixQueryPathMap>,
+    pub map: NixQueryPathMap,
 }
 
 impl NixStoreRes {
@@ -38,7 +38,7 @@ impl NixStoreRes {
         NixStoreRes {
             raw: raw,
             tree: Arc::new(tree),
-            map: Arc::new(map),
+            map: map,
         }
     }
 
