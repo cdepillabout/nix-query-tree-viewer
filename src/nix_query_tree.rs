@@ -89,6 +89,7 @@ impl NixQueryDrv {
 }
 
 impl FromStr for NixQueryDrv {
+    // This should really be never.
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -129,10 +130,10 @@ pub enum Recurse {
 pub struct NixQueryEntry(pub NixQueryDrv, pub Recurse);
 
 impl FromStr for NixQueryEntry {
-    type Err = ();
+    type Err = nom::Err<(String, nom::error::ErrorKind)>;
 
-    fn from_str(s: &str) -> Result<Self, ()> {
-        parsing::nix_query_entry_parser(s).map_err(|_| ())
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parsing::nix_query_entry_parser(s).map_err(|err| err.to_owned())
     }
 }
 
