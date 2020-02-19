@@ -76,7 +76,7 @@ fn handle_copy_drv_path_menu_item_activated(
     let tree_view = state.get_tree_view();
     if let Some(display) = tree_view.get_display() {
         if let Some(clipboard) = gtk::Clipboard::get_default(&display) {
-            clipboard.set_text(&nix_query_entry.path().to_string_lossy());
+            clipboard.set_text(&nix_query_entry.to_string_lossy());
             clipboard.store();
         }
     }
@@ -110,7 +110,7 @@ fn handle_search_for_this_menu_item_activated(
     state: &ui::State,
     nix_query_entry: &NixQueryEntry,
 ) {
-    ui::search_for(state, &nix_query_entry.path());
+    ui::search_for(state, &nix_query_entry);
 }
 
 fn create_search_for_this_menu_item(

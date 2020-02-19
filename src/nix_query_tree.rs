@@ -5,20 +5,32 @@ use super::tree::{Path, Tree, TreePathMap};
 use std::path::PathBuf;
 use std::str::FromStr;
 
+/// This corresponds to a nix store path.
+///
+/// ```
+/// use nix_query_tree_viewer::nix_query_tree::NixQueryDrv;
+///
+/// let nix_query_drv =
+///     NixQueryDrv::from("/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10");
+/// ```
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct NixQueryDrv(PathBuf);
 
-impl From<&str> for NixQueryDrv {
-    fn from(item: &str) -> Self {
-        NixQueryDrv(PathBuf::from(item))
+impl<T: ?Sized + AsRef<std::ffi::OsStr>> From<&T> for NixQueryDrv {
+    fn from(s: &T) -> NixQueryDrv {
+        NixQueryDrv(PathBuf::from(s.as_ref().to_os_string()))
+    }
+}
+
+impl std::ops::Deref for NixQueryDrv {
+    type Target = std::path::Path;
+
+    fn deref(&self) -> &std::path::Path {
+        &self.0
     }
 }
 
 impl NixQueryDrv {
-    pub fn path(&self) -> &std::path::Path {
-        &self.0
-    }
-
     pub fn cmp_hash(&self, other: &Self) -> std::cmp::Ordering {
         self.0.cmp(&other.0)
     }
@@ -56,7 +68,7 @@ impl NixQueryDrv {
     ///
     /// * Panics
     ///
-    /// This panics if the derivation name doesn't have a `-` in it.  All nix derivations must have
+    /// This panics if the derivation name doesn't have a `-` in it.  All nix derivations have
     /// a `-` in them after the hash.
     pub fn drv_name(&self) -> String {
         let drv_str = self.0.to_string_lossy();
@@ -90,18 +102,53 @@ impl std::fmt::Display for NixQueryDrv {
     }
 }
 
+/// Whether or not there is a separate entry in this tree that recurses into the dependencies for
+/// this nix store entry.
+///
+/// See `NixQueryEntry`.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Recurse {
     Yes,
     No,
 }
 
+/// `NixQueryDrv` coupled with a marker for a recursive entry.
+///
+/// ```
+/// use nix_query_tree_viewer::nix_query_tree::{NixQueryEntry, Recurse};
+/// use std::str::FromStr;
+///
+/// let nix_query_entry =
+///     NixQueryEntry::from_str("/nix/store/az4kl5slhbkmmy4vj98z3hzxxkan7zza-gnugrep-3.3 [...]");
+/// let actual_nix_query_entry =
+///     NixQueryEntry::new("/nix/store/az4kl5slhbkmmy4vj98z3hzxxkan7zza-gnugrep-3.3", Recurse::Yes);
+/// assert_eq!(nix_query_entry, Ok(actual_nix_query_entry));
+/// ```
+///
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct NixQueryEntry(pub NixQueryDrv, pub Recurse);
 
+impl FromStr for NixQueryEntry {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, ()> {
+        parsing::nix_query_entry_parser(s).map_err(|_| ())
+    }
+}
+
+impl std::ops::Deref for NixQueryEntry {
+    type Target = std::path::Path;
+
+    fn deref(&self) -> &std::path::Path {
+        &self.0
+    }
+}
+
 impl NixQueryEntry {
-    pub fn path(&self) -> &std::path::Path {
-        self.0.path()
+    pub fn new<T>(nix_query_drv: &T, recurse: Recurse) -> NixQueryEntry where
+        T: ?Sized + AsRef<std::ffi::OsStr>
+    {
+        NixQueryEntry(NixQueryDrv::from(nix_query_drv), recurse)
     }
 
     pub fn cmp_hash(&self, other: &Self) -> std::cmp::Ordering {

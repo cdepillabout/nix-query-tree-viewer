@@ -24,6 +24,12 @@ named!(parse_nix_query_entry<&str, NixQueryEntry>,
         (NixQueryEntry(drv, opt_recurse.unwrap_or(Recurse::No)))
     ));
 
+pub fn nix_query_entry_parser(
+    input: &str
+) -> Result<NixQueryEntry, nom::Err<(&str, nom::error::ErrorKind)>> {
+    parse_nix_query_entry(input).map(|(_, nix_query_entry)| nix_query_entry)
+}
+
 named!(parse_branch_start<&str, &str>,
     tag!("+---"));
 
