@@ -169,11 +169,29 @@ impl NixQueryEntry {
     }
 }
 
+/// A `Tree` representing the result from `nix store --query --tree`.
+///
+/// ```
+/// use indoc::indoc;
+/// use nix_query_tree_viewer::nix_query_tree::NixQueryTree;
+/// use std::str::FromStr;
+///
+/// let raw_tree = indoc!(
+///         "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+///         +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27
+///         |   +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27 [...]
+///         +---/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+///         "
+///     );
+/// let nix_query_tree = NixQueryTree::from_str(raw_tree);
+///
+/// assert!(nix_query_tree.is_ok());
+/// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NixQueryTree(pub Tree<NixQueryEntry>);
 
 impl NixQueryTree {
-    fn path_map(&self) -> NixQueryPathMap {
+    pub fn path_map(&self) -> NixQueryPathMap {
         let tree: &Tree<NixQueryEntry> = &self.0;
         let tree_path_map =
             tree.path_map_map(&|nix_query_entry| nix_query_entry.0);
@@ -185,6 +203,41 @@ impl NixQueryTree {
     }
 }
 
+impl FromStr for NixQueryTree {
+    type Err = nom::Err<(String, nom::error::ErrorKind)>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parsing::nix_query_tree_parser(s).map_err(|err| err.to_owned())
+    }
+}
+
+/// A mapping of `NixQueryDrv` to `TreePath`.  This gives an easy way to
+/// figure out where a `NixQueryDrv` is an a `NixQueryTree`.
+///
+/// ```
+/// use indoc::indoc;
+/// use nix_query_tree_viewer::nix_query_tree::{NixQueryDrv, NixQueryTree};
+/// use nix_query_tree_viewer::tree::Path;
+/// use std::str::FromStr;
+///
+/// let raw_tree = indoc!(
+///         "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+///         +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27
+///         |   +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27 [...]
+///         +---/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+///         +---/nix/store/9ny6szla9dg61jv8q22qbnqsz37465n0-multiple-outputs.sh
+///             +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27 [...]
+///                 +---/nix/store/5wvmvcc3b7sisirx1vsqbqdis0sd1x5d-cc-wrapper.sh
+///                 +---/nix/store/5jzbjvnrz85n454inlyxcpgap9i6k6la-pcre-8.43
+///         "
+///     );
+/// let nix_query_tree = NixQueryTree::from_str(raw_tree).unwrap();
+/// let map = nix_query_tree.path_map();
+/// let pcre_drv = NixQueryDrv::from("/nix/store/5jzbjvnrz85n454inlyxcpgap9i6k6la-pcre-8.43");
+/// let expected_path = Some(Path::from(vec![2, 0, 1]));
+///
+/// assert_eq!(map.lookup_first(&pcre_drv), expected_path.as_ref());
+/// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NixQueryPathMap(pub TreePathMap<NixQueryDrv>);
 
