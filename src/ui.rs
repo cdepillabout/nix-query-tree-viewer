@@ -120,7 +120,7 @@ fn app_activate(app: gtk::Application) {
     let window: gtk::ApplicationWindow = state.get_app_win();
     window.set_application(Some(&state.app));
 
-    css::setup(window.clone().upcast());
+    css::setup(window.upcast_ref());
     menu::setup(&state);
     toolbar::setup(&state);
     stack::setup(&state);

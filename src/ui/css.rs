@@ -1,6 +1,6 @@
 use super::prelude::*;
 
-pub fn setup(window: gtk::Window) {
+pub fn setup(window: &gtk::Window) {
     let screen: gdk::Screen = match window.get_screen() {
         Some(screen) => screen,
         None => {
