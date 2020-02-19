@@ -8,8 +8,8 @@ use super::super::super::prelude::*;
 use super::columns;
 
 fn insert_child(
-    tree_store: gtk::TreeStore,
-    parent: Option<gtk::TreeIter>,
+    tree_store: &gtk::TreeStore,
+    parent: Option<&gtk::TreeIter>,
     child: &Tree<NixQueryEntry>,
 ) {
     let Tree { item, children }: &Tree<NixQueryEntry> = child;
@@ -23,7 +23,7 @@ fn insert_child(
         ""
     };
     let this_iter: gtk::TreeIter = tree_store.insert_with_values(
-        parent.as_ref(),
+        parent,
         None,
         &columns::Column::INDICIES
             .iter()
@@ -31,21 +31,21 @@ fn insert_child(
             .collect::<Vec<u32>>(),
         &[&drv_str, &recurse_str, &hash_and_drv_name, &only_drv_name],
     );
-    insert_children(tree_store, this_iter, children);
+    insert_children(tree_store, &this_iter, children);
 }
 
 fn insert_children(
-    tree_store: gtk::TreeStore,
-    parent: gtk::TreeIter,
+    tree_store: &gtk::TreeStore,
+    parent: &gtk::TreeIter,
     children: &[Tree<NixQueryEntry>],
 ) {
     for child in children {
         let _: &Tree<NixQueryEntry> = child;
-        insert_child(tree_store.clone(), Some(parent.clone()), child)
+        insert_child(tree_store, Some(parent), child)
     }
 }
 
-pub fn insert(tree_store: gtk::TreeStore, nix_store_res: &NixStoreRes) {
+pub fn insert(tree_store: &gtk::TreeStore, nix_store_res: &NixStoreRes) {
     let nix_query_tree: &NixQueryTree = &nix_store_res.tree;
     let tree: &Tree<NixQueryEntry> = &nix_query_tree.0;
     insert_child(tree_store, None, tree);

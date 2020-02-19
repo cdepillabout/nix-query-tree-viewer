@@ -28,7 +28,7 @@ pub fn enable(state: &ui::State) {
 fn render_nix_store_res(state: &ui::State) {
     if let Some(res) = &*state.read_nix_store_res() {
         let tree_store = state.get_tree_store();
-        store::insert(tree_store, res);
+        store::insert(&tree_store, res);
     }
 }
 
