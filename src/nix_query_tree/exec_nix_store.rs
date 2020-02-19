@@ -27,7 +27,7 @@ impl std::fmt::Display for NixStoreErr {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NixStoreRes {
-    pub raw: Arc<String>,
+    pub raw: String,
     pub tree: Arc<NixQueryTree>,
     pub map: Arc<NixQueryPathMap>,
 }
@@ -36,7 +36,7 @@ impl NixStoreRes {
     pub fn new(raw: String, tree: NixQueryTree) -> Self {
         let map: NixQueryPathMap = tree.path_map();
         NixStoreRes {
-            raw: Arc::new(raw),
+            raw: raw,
             tree: Arc::new(tree),
             map: Arc::new(map),
         }
