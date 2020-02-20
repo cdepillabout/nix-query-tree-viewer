@@ -9,13 +9,8 @@ in
 with import src {};
 
 stdenv.mkDerivation {
-  name = "advent-of-code-2018-rust-env";
+  name = "nix-query-tree-viewer-rust-env";
   nativeBuildInputs = [
-    # cargo
-    # rustc
-    # rustfmt
-    # rustPackages.clippy
-
     # Things like cargo, rustc, rustfmt, and clippy can be installed with commands like
     #
     # $ rustup component add clippy

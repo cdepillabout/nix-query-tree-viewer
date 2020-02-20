@@ -1,13 +1,16 @@
 [package]
 name = "nix-query-tree-viewer"
 version = "0.1.0"
-authors = ["illabout"]
+authors = ["cdepillabout@gmail.com"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "A GTK viewer for `nix-store --query --tree` output"
+license = "MIT"
+repository = "https://github.com/cdepillabout/nix-query-tree-viewer"
+readme = "README.md"
+keywords = ["gtk", "nix", "nix-store", "gui"]
+categories = ["tools"]
 
 [dependencies]
-ego-tree = "0.6.2"
 gdk = "0.12.0"
 gio = "0.8.0"
 glib = "0.9.1"
@@ -23,5 +26,3 @@ features = ["v3_22"]
 
 [dev-dependencies]
 indoc = "0.3.4"
-
-
