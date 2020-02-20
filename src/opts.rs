@@ -2,9 +2,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
-#[structopt(
-    about = "GUI viewer for `nix store --query --tree` output."
-)]
+#[structopt(about = "GUI viewer for `nix store --query --tree` output.")]
 pub struct Opts {
     /// PATH in /nix/store to view references of
     #[structopt(name = "PATH", parse(from_os_str))]

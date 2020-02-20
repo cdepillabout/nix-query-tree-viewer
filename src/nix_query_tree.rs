@@ -146,8 +146,9 @@ impl std::ops::Deref for NixQueryEntry {
 }
 
 impl NixQueryEntry {
-    pub fn new<T>(nix_query_drv: &T, recurse: Recurse) -> NixQueryEntry where
-        T: ?Sized + AsRef<std::ffi::OsStr>
+    pub fn new<T>(nix_query_drv: &T, recurse: Recurse) -> NixQueryEntry
+    where
+        T: ?Sized + AsRef<std::ffi::OsStr>,
     {
         NixQueryEntry(NixQueryDrv::from(nix_query_drv), recurse)
     }

@@ -25,7 +25,7 @@ named!(parse_nix_query_entry<&str, NixQueryEntry>,
     ));
 
 pub fn nix_query_entry_parser(
-    input: &str
+    input: &str,
 ) -> Result<NixQueryEntry, nom::Err<(&str, nom::error::ErrorKind)>> {
     parse_nix_query_entry(input).map(|(_, nix_query_entry)| nix_query_entry)
 }
@@ -39,8 +39,7 @@ named!(parse_extra_level<&str, &str>,
 /// Run `parse_extra_level` exactly `level` times.
 fn parse_extra_levels(level: usize) -> impl Fn(&str) -> IResult<&str, ()> {
     move |input| {
-        let (input, _) =
-            many_m_n(level, level, parse_extra_level)(input)?;
+        let (input, _) = many_m_n(level, level, parse_extra_level)(input)?;
         Ok((input, ()))
     }
 }

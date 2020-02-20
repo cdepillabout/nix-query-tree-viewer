@@ -127,10 +127,13 @@ fn app_activate(app: &gtk::Application) {
 
     window.show_all();
 
-    receiver.attach(None, clone!(@strong state => move |msg| {
-        handle_msg_recv(&state, msg);
-        glib::source::Continue(true)
-    }));
+    receiver.attach(
+        None,
+        clone!(@strong state => move |msg| {
+            handle_msg_recv(&state, msg);
+            glib::source::Continue(true)
+        }),
+    );
 
     // Do the initial search and display the results.
     let opts = crate::opts::Opts::parse_from_args();

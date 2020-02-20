@@ -1,8 +1,8 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use super::{NixQueryEntry, NixQueryPathMap, NixQueryTree};
 use super::parsing;
+use super::{NixQueryEntry, NixQueryPathMap, NixQueryTree};
 use crate::tree;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -68,9 +68,7 @@ impl ExecNixStoreRes {
     }
 }
 
-fn nix_store_res(
-    nix_store_path: &Path,
-) -> Result<NixStoreRes, NixStoreErr> {
+fn nix_store_res(nix_store_path: &Path) -> Result<NixStoreRes, NixStoreErr> {
     let nix_store_output: Output = Command::new("nix-store")
         .args(&["--query", "--tree", &nix_store_path.to_string_lossy()])
         .output()

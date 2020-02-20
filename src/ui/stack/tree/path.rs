@@ -158,7 +158,8 @@ impl GtkChildTreeIter {
         tree_store: &gtk::TreeStore,
         nix_store_res: &NixStoreRes,
     ) -> Option<NixQueryEntry> {
-        let tree_path = GtkChildTreePath::new(&tree_store.get_path(self.get())?);
+        let tree_path =
+            GtkChildTreePath::new(&tree_store.get_path(self.get())?);
         tree_path.nix_query_tree_lookup(&nix_store_res.tree)
     }
 }
@@ -207,10 +208,8 @@ impl TreeViewCol {
         tree_view: &gtk::TreeView,
         tree_view_column: &gtk::TreeViewColumn,
     ) -> Option<Column> {
-        let column_pos: usize = get_tree_view_column_pos(
-            tree_view,
-            tree_view_column,
-        );
+        let column_pos: usize =
+            get_tree_view_column_pos(tree_view, tree_view_column);
         Column::try_from(column_pos).ok()
     }
 }
@@ -286,8 +285,7 @@ fn is_for_recurse_column_child(
     nix_store_res: &NixStoreRes,
 ) -> Option<NixQueryEntry> {
     let tree_view = state.get_tree_view();
-    let option_column =
-        TreeViewCol::from_gtk(&tree_view, tree_view_column);
+    let option_column = TreeViewCol::from_gtk(&tree_view, tree_view_column);
     let option_nix_query_entry_is_recurse = child_tree_path
         .nix_store_res_lookup(nix_store_res)
         .filter(|nix_query_entry| nix_query_entry.1 == Recurse::Yes);

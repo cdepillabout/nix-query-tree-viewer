@@ -79,8 +79,9 @@ impl Path {
     }
 }
 
-impl<T> From<T> for Path where
-    T: Into<VecDeque<usize>>
+impl<T> From<T> for Path
+where
+    T: Into<VecDeque<usize>>,
 {
     fn from(other: T) -> Path {
         Path(other.into())
