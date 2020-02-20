@@ -26,25 +26,20 @@ impl<T> Tree<T> {
             },
         }
     }
-}
 
-impl<T> Tree<T>
-where
-    T: Clone,
-{
     /// Similar to `path_map`, but take a function for mapping an item in the tree to an
     /// alternative type to use to construct the `TreePathMap`.
     ///
     /// This is useful when there is some information in the item for the `Tree` that
     /// can be thrown away when constructing the `TreePathMap`.
-    pub fn path_map_map<U>(&self, f: &dyn Fn(T) -> U) -> TreePathMap<U>
+    pub fn path_map_map<U>(&self, f: &dyn Fn(&T) -> U) -> TreePathMap<U>
     where
         U: Eq + Hash,
     {
         let mut map = TreePathMap::new();
         let root_path = Path::new();
-        map.insert(f(self.item.clone()), root_path.clone());
-        map.insert_children_map(&self.children, root_path, f);
+        map.insert(f(&self.item), &root_path);
+        map.insert_children_map(&self.children, &root_path, f);
         map
     }
 }
@@ -55,10 +50,11 @@ where
 {
     /// Create a `TreePathMap` for the elements in the `Tree`.
     pub fn path_map(&self) -> TreePathMap<T> {
-        self.path_map_map(&std::convert::identity)
+        self.path_map_map(&|i| i.clone())
     }
 }
 
+/// This represents the path through a `Tree<T>` to a given node.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Path(pub VecDeque<usize>);
 
@@ -83,75 +79,61 @@ impl Path {
     }
 }
 
-impl From<Vec<usize>> for Path {
-    fn from(other: Vec<usize>) -> Path {
+impl<T> From<T> for Path where
+    T: Into<VecDeque<usize>>
+{
+    fn from(other: T) -> Path {
         Path(other.into())
     }
 }
 
+/// This is a mapping of items in `Tree` to their `Path`s.  A single item in the `Tree` can have
+/// multiple `Path`s to it if it is in the `Tree` multiple times.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct TreePathMap<T>(HashMap<T, Vec<Path>>)
+pub struct TreePathMap<U>(HashMap<U, Vec<Path>>)
 where
-    T: Eq + Hash;
+    U: Eq + Hash;
 
-impl<T> TreePathMap<T>
+impl<U> TreePathMap<U>
 where
-    T: Eq + Hash,
+    U: Eq + Hash,
 {
-    pub fn new() -> TreePathMap<T> {
+    pub fn new() -> TreePathMap<U> {
         TreePathMap(HashMap::new())
     }
 
-    pub fn insert(&mut self, k: T, path: Path) {
+    /// Insert a mapping from `U` to `Path`.
+    pub fn insert(&mut self, k: U, path: &Path) {
         self.0
             .entry(k)
             .and_modify(|paths| paths.push(path.clone()))
-            .or_insert(vec![path]);
+            .or_insert(vec![path.clone()]);
     }
 
-    // fn insert_children_own(&mut self, children: Vec<Tree<T>>, path: Path) {
-    //     for (i, child) in children.into_iter().enumerate() {
-    //         let child_path = path.push_back(i);
-    //         self.insert(child.item, child_path.clone());
-    //         self.insert_children_own(child.children, child_path);
-    //     }
-    // }
-
-    pub fn lookup_first(&self, k: &T) -> Option<&Path> {
+    /// Lookup the first `Path` for a given item.
+    pub fn lookup_first(&self, k: &U) -> Option<&Path> {
         let option_paths: Option<&Vec<Path>> = self.0.get(k);
         option_paths.and_then(|vec: &Vec<Path>| vec.first())
     }
 }
 
-impl<T> TreePathMap<T>
+impl<U> TreePathMap<U>
 where
-    T: Clone + Eq + Hash,
+    U: Eq + Hash,
 {
-    // TODO: How to write insert_children_own and insert_children
-    // in one function.  Polymorphism over ownership/references??
-    // fn insert_children(&mut self, children: &[Tree<T>], path: Path) {
-    //     self.insert_children_map(children, path, |t| t)
-    // }
-}
-
-impl<T> TreePathMap<T>
-where
-    T: Eq + Hash,
-{
-    // TODO: How to write insert_children_own and insert_children
-    // in one function.  Polymorphism over ownership/references??
-    fn insert_children_map<U>(
+    /// Insert child `Tree`s starting at `Path`.
+    ///
+    /// The function `f` will map the items in the `T` to an alternative type.
+    fn insert_children_map<T>(
         &mut self,
-        children: &[Tree<U>],
-        path: Path,
-        f: &dyn Fn(U) -> T,
-    ) where
-        U: Clone,
-    {
+        children: &[Tree<T>],
+        path: &Path,
+        f: &dyn Fn(&T) -> U,
+    ) {
         for (i, child) in children.iter().enumerate() {
             let child_path = path.push_back(i);
-            self.insert(f(child.item.clone()), child_path.clone());
-            self.insert_children_map(&child.children, child_path, f);
+            self.insert(f(&child.item), &child_path);
+            self.insert_children_map(&child.children, &child_path, f);
         }
     }
 }
