@@ -3,3 +3,6 @@
 
 # glade saves backup files with a tilde at the end of the filename
 *~
+
+# nix result output files
+result
