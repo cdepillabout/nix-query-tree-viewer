@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use super::{NixQueryEntry, NixQueryPathMap, NixQueryTree};
+use super::parsing;
 use crate::tree;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -32,10 +33,10 @@ pub struct NixStoreRes {
 }
 
 impl NixStoreRes {
-    pub fn new(raw: String, tree: NixQueryTree) -> Self {
+    pub fn new(raw: &str, tree: NixQueryTree) -> Self {
         let map: NixQueryPathMap = tree.path_map();
         NixStoreRes {
-            raw: raw,
+            raw: String::from(raw),
             tree: tree,
             map: map,
         }
@@ -44,8 +45,8 @@ impl NixStoreRes {
     pub fn lookup_first_query_entry(
         &self,
         nix_query_entry: &NixQueryEntry,
-    ) -> Option<tree::Path> {
-        self.map.lookup_first(&nix_query_entry.0).cloned()
+    ) -> Option<&tree::Path> {
+        self.map.lookup_first(&nix_query_entry.0)
     }
 }
 
@@ -67,7 +68,7 @@ impl ExecNixStoreRes {
     }
 }
 
-pub fn nix_store_res(
+fn nix_store_res(
     nix_store_path: &Path,
 ) -> Result<NixStoreRes, NixStoreErr> {
     let nix_store_output: Output = Command::new("nix-store")
@@ -77,8 +78,8 @@ pub fn nix_store_res(
 
     if nix_store_output.status.success() {
         let stdout = from_utf8(nix_store_output.stdout)?;
-        super::parsing::nix_query_tree_parser(&stdout.clone())
-            .map(|nix_query_tree| NixStoreRes::new(stdout, nix_query_tree))
+        parsing::nix_query_tree_parser(&stdout)
+            .map(|nix_query_tree| NixStoreRes::new(&stdout, nix_query_tree))
             .map_err(|nom_err| NixStoreErr::ParseErr(nom_err.to_string()))
     } else {
         let stderr = from_utf8(nix_store_output.stderr)?;
@@ -86,6 +87,7 @@ pub fn nix_store_res(
     }
 }
 
+/// Run `nix-store --query --tree` for the given nix store path.
 pub fn run(nix_store_path: &Path) -> ExecNixStoreRes {
     ExecNixStoreRes {
         nix_store_path: nix_store_path.to_path_buf(),
@@ -93,6 +95,7 @@ pub fn run(nix_store_path: &Path) -> ExecNixStoreRes {
     }
 }
 
+/// Convert a `Vec<u8>` to a proper utf8 `String`, converting the error to `NixStoreErr::Utf8Err`.
 fn from_utf8(i: Vec<u8>) -> Result<String, NixStoreErr> {
     String::from_utf8(i)
         .map_err(|utf8_err| NixStoreErr::Utf8Err(utf8_err.to_string()))
