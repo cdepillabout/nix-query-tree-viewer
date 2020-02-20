@@ -55,7 +55,7 @@ where
 }
 
 /// This represents the path through a `Tree<T>` to a given node.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Path(pub VecDeque<usize>);
 
 impl Path {

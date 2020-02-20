@@ -337,8 +337,6 @@ pub fn nix_query_entry_for_event_button(
     let option_child_tree_path =
         event_button_to_child_tree_path(state, event_button);
 
-    let option_child_query_entry = option_child_tree_path
-        .and_then(|x| x.nix_store_res_lookup(nix_store_res));
-
-    option_child_query_entry
+    option_child_tree_path
+        .and_then(|x| x.nix_store_res_lookup(nix_store_res))
 }

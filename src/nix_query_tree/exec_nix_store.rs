@@ -37,8 +37,8 @@ impl NixStoreRes {
         let map: NixQueryPathMap = tree.path_map();
         NixStoreRes {
             raw: String::from(raw),
-            tree: tree,
-            map: map,
+            tree,
+            map,
         }
     }
 
