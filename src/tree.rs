@@ -108,7 +108,7 @@ where
         self.0
             .entry(k)
             .and_modify(|paths| paths.push(path.clone()))
-            .or_insert(vec![path.clone()]);
+            .or_insert_with(|| vec![path.clone()]);
     }
 
     /// Lookup the first `Path` for a given item.
