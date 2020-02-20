@@ -12,7 +12,7 @@ let
           self.gnome3.gtk3
         ];
 
-        cargoSha256 = "070mvz3igc0dp5vcwqg1ri9lafcfpnwx3ifbq8k1yzkl5aj9yjky";
+        cargoSha256 = "1cdni03x161hvpzbkqq4g11c86f3scygrpjzbdirvgx3fdh03qv9";
       };
   };
 

@@ -30,7 +30,7 @@
 {
   network.description = "Gnome With nix-query-tree-viewer";
 
-  nix-query-tree-viewer-machine =
+  nqtv-machine =
     { config, pkgs, ...}:
     {
       imports = [ ];
@@ -38,7 +38,7 @@
       deployment = {
         targetEnv = "virtualbox";
         virtualbox = {
-          disks.disk1.size = 20480;
+          # disks.disk1.size = 20480;
           headless = false;
           memorySize = 2024;
           vcpu = 1;
@@ -58,7 +58,7 @@
               wirelesstools xfce.terminal xorg.xbacklight xorg.xmodmap
               xscreensaver xterm zlib
             ];
-            nix-query-tree-viewer = import ../default.nix { };
+            nix-query-tree-viewer = import ../default.nix;
           in [ nix-query-tree-viewer ] ++ pkgList;
         variables.EDITOR = "vim";
       };
