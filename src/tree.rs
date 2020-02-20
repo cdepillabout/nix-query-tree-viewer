@@ -90,7 +90,7 @@ where
 
 /// This is a mapping of items in `Tree` to their `Path`s.  A single item in the `Tree` can have
 /// multiple `Path`s to it if it is in the `Tree` multiple times.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct TreePathMap<U>(HashMap<U, Vec<Path>>)
 where
     U: Eq + Hash;
