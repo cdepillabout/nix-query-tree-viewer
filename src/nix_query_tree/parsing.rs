@@ -36,16 +36,18 @@ named!(parse_branch_start<&str, &str>,
 named!(parse_extra_level<&str, &str>,
     alt!(tag!("|   ") | tag!("    ")));
 
-fn parse_extra_levels(level: u32) -> impl Fn(&str) -> IResult<&str, ()> {
+/// Run `parse_extra_level` exactly `level` times.
+fn parse_extra_levels(level: usize) -> impl Fn(&str) -> IResult<&str, ()> {
     move |input| {
         let (input, _) =
-            many_m_n(level as usize, level as usize, parse_extra_level)(input)?;
+            many_m_n(level, level, parse_extra_level)(input)?;
         Ok((input, ()))
     }
 }
 
+/// Parse a single line of `nix-store --query --entry` output.
 fn parse_single_branch(
-    level: u32,
+    level: usize,
 ) -> impl Fn(&str) -> IResult<&str, NixQueryEntry> {
     move |input| {
         let (input, _) = parse_extra_levels(level)(input)?;
@@ -56,8 +58,9 @@ fn parse_single_branch(
     }
 }
 
+/// Parse a branch with all of its children.
 fn parse_branch_with_children(
-    level: u32,
+    level: usize,
 ) -> impl Fn(&str) -> IResult<&str, Tree<NixQueryEntry>> {
     move |input| {
         let (input, nix_query_entry) = parse_single_branch(level)(input)?;
@@ -67,7 +70,7 @@ fn parse_branch_with_children(
 }
 
 fn parse_branches(
-    level: u32,
+    level: usize,
 ) -> impl Fn(&str) -> IResult<&str, Vec<Tree<NixQueryEntry>>> {
     move |input| {
         let (input, children) =
@@ -91,6 +94,7 @@ named!(parse_nix_query_tree_final<&str, NixQueryTree>,
         eof!() >>
         (nix_query_tree)));
 
+/// Parse all output from `nix-store --query --tree`.
 pub fn nix_query_tree_parser(
     input: &str,
 ) -> Result<NixQueryTree, nom::Err<(&str, nom::error::ErrorKind)>> {

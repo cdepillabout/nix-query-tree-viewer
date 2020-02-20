@@ -16,6 +16,7 @@ impl<T> Tree<T> {
         Tree::new(item, vec![])
     }
 
+    /// Lookup the item in the `Tree` that corresponds to the given `Path`.
     pub fn lookup(&self, path: &Path) -> Option<&T> {
         match path.split_front() {
             None => Some(&self.item),
@@ -31,10 +32,11 @@ impl<T> Tree<T>
 where
     T: Clone,
 {
-    pub fn append(&mut self, new_child_tree: Tree<T>) {
-        self.children.push(new_child_tree);
-    }
-
+    /// Similar to `path_map`, but take a function for mapping an item in the tree to an
+    /// alternative type to use to construct the `TreePathMap`.
+    ///
+    /// This is useful when there is some information in the item for the `Tree` that
+    /// can be thrown away when constructing the `TreePathMap`.
     pub fn path_map_map<U>(&self, f: &dyn Fn(T) -> U) -> TreePathMap<U>
     where
         U: Eq + Hash,
@@ -51,6 +53,7 @@ impl<T> Tree<T>
 where
     T: Clone + Eq + Hash,
 {
+    /// Create a `TreePathMap` for the elements in the `Tree`.
     pub fn path_map(&self) -> TreePathMap<T> {
         self.path_map_map(&std::convert::identity)
     }

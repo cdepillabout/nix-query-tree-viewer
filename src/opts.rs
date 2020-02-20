@@ -3,7 +3,6 @@ use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "example",
     about = "GUI viewer for `nix store --query --tree` output."
 )]
 pub struct Opts {
