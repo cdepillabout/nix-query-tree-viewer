@@ -17,12 +17,12 @@ impl<T> Tree<T> {
     }
 
     /// Lookup the item in the `Tree` that corresponds to the given `Path`.
-    pub fn lookup(&self, path: &Path) -> Option<&T> {
+    pub fn lookup(&self, path: Path) -> Option<&T> {
         match path.split_front() {
             None => Some(&self.item),
             Some((index, child_path)) => match self.children.get(index) {
                 None => None,
-                Some(child_tree) => child_tree.lookup(&child_path),
+                Some(child_tree) => child_tree.lookup(child_path),
             },
         }
     }
@@ -59,12 +59,11 @@ where
 pub struct Path(pub VecDeque<usize>);
 
 impl Path {
-    pub fn split_front(&self) -> Option<(usize, Path)> {
-        let mut new_path = self.clone();
-        let option_front_elem: Option<usize> = new_path.0.pop_front();
+    pub fn split_front(mut self) -> Option<(usize, Path)> {
+        let option_front_elem: Option<usize> = self.0.pop_front();
         match option_front_elem {
             None => None,
-            Some(i) => Some((i, new_path)),
+            Some(i) => Some((i, self)),
         }
     }
 

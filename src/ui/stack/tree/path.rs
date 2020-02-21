@@ -58,14 +58,14 @@ impl GtkChildTreePath {
     }
 
     pub fn nix_query_tree_lookup(
-        &self,
+        self,
         nix_query_tree: &NixQueryTree,
     ) -> Option<NixQueryEntry> {
-        nix_query_tree.lookup(&self.to_path()).cloned()
+        nix_query_tree.lookup(self.to_path()).cloned()
     }
 
     pub fn nix_store_res_lookup(
-        &self,
+        self,
         nix_store_res: &NixStoreRes,
     ) -> Option<NixQueryEntry> {
         self.nix_query_tree_lookup(&nix_store_res.tree)
@@ -281,7 +281,7 @@ fn event_button_to_child_tree_path(
 fn is_for_recurse_column_child(
     state: &ui::State,
     tree_view_column: &gtk::TreeViewColumn,
-    child_tree_path: &GtkChildTreePath,
+    child_tree_path: GtkChildTreePath,
     nix_store_res: &NixStoreRes,
 ) -> Option<NixQueryEntry> {
     let tree_view = state.get_tree_view();
@@ -307,7 +307,7 @@ pub fn is_for_recurse_column_parent(
     is_for_recurse_column_child(
         state,
         tree_view_column,
-        &child_tree_path,
+        child_tree_path,
         nix_store_res,
     )
 }

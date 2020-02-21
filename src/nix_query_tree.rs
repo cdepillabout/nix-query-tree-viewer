@@ -199,7 +199,7 @@ impl NixQueryTree {
         NixQueryPathMap(tree_path_map)
     }
 
-    pub fn lookup(&self, path: &Path) -> Option<&NixQueryEntry> {
+    pub fn lookup(&self, path: Path) -> Option<&NixQueryEntry> {
         self.0.lookup(path)
     }
 }
