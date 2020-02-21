@@ -48,11 +48,11 @@ fn go_to_curr_path_for_query_entry(
 
 fn handle_row_activated(
     state: &ui::State,
-    tree_path: &gtk::TreePath,
+    tree_path: gtk::TreePath,
     tree_view_column: &gtk::TreeViewColumn,
 ) {
     if let Some(nix_store_res) = &*state.read_nix_store_res() {
-        let parent_tree_path = path::GtkParentTreePath::new(tree_path);
+        let parent_tree_path = path::GtkParentTreePath::new(tree_path.clone());
         match path::is_for_recurse_column_parent(
             state,
             tree_view_column,
@@ -64,7 +64,7 @@ fn handle_row_activated(
                 nix_store_res,
                 &nix_query_entry,
             ),
-            _ => toggle_row_expanded(state, tree_path, false),
+            _ => toggle_row_expanded(state, &tree_path, false),
         }
     }
 }
@@ -211,7 +211,7 @@ pub fn connect(state: &ui::State) {
         clone!(@strong state => move |_, tree_path, tree_view_column| {
             handle_row_activated(
                 &state,
-                tree_path,
+                tree_path.clone(),
                 tree_view_column,
             );
         }),

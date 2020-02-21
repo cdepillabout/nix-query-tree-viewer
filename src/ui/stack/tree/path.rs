@@ -32,7 +32,7 @@ impl GtkChildTreePath {
         let parent_tree_path = tree_model_sort
             .convert_child_path_to_path(self.get())
             .expect("child_tree_path should always be able to be converted to a parent tree_path");
-        GtkParentTreePath::new(&parent_tree_path)
+        GtkParentTreePath::new(parent_tree_path)
     }
 
     pub fn from_path(path: &tree::Path) -> Self {
@@ -88,8 +88,8 @@ impl std::fmt::Debug for GtkParentTreePath {
 }
 
 impl GtkParentTreePath {
-    pub fn new(tree_path: &gtk::TreePath) -> Self {
-        GtkParentTreePath(tree_path.clone())
+    pub fn new(tree_path: gtk::TreePath) -> Self {
+        GtkParentTreePath(tree_path)
     }
 
     fn get(&self) -> &gtk::TreePath {
@@ -145,8 +145,8 @@ impl GtkParentTreePath {
 pub struct GtkChildTreeIter(gtk::TreeIter);
 
 impl GtkChildTreeIter {
-    pub fn new(tree_iter: &gtk::TreeIter) -> Self {
-        GtkChildTreeIter(tree_iter.clone())
+    pub fn new(tree_iter: gtk::TreeIter) -> Self {
+        GtkChildTreeIter(tree_iter)
     }
 
     fn get(&self) -> &gtk::TreeIter {
@@ -249,7 +249,7 @@ fn event_button_to_parent_tree_path_column(
     if let Some((Some(tree_path), Some(tree_view_column), _, _)) =
         tree_view.get_path_at_pos(x as i32, y as i32)
     {
-        Some((GtkParentTreePath::new(&tree_path), tree_view_column))
+        Some((GtkParentTreePath::new(tree_path), tree_view_column))
     } else {
         None
     }

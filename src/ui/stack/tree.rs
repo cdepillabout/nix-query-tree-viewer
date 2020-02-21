@@ -40,13 +40,13 @@ pub fn setup(state: &ui::State) {
 fn set_sort_func<O: IsA<gtk::TreeSortable>>(
     tree_model_sort: &O,
     sort_func: Box<
-        dyn Fn(&gtk::TreeModel, &gtk::TreeIter, &gtk::TreeIter) -> Ordering
+        dyn Fn(gtk::TreeModel, gtk::TreeIter, gtk::TreeIter) -> Ordering
             + 'static,
     >,
 ) {
     let sort_func_data: Box<
         Box<
-            dyn Fn(&gtk::TreeModel, &gtk::TreeIter, &gtk::TreeIter) -> Ordering
+            dyn Fn(gtk::TreeModel, gtk::TreeIter, gtk::TreeIter) -> Ordering
                 + 'static,
         >,
     > = Box::new(sort_func);
@@ -64,11 +64,11 @@ fn set_sort_func<O: IsA<gtk::TreeSortable>>(
         let tree_iter_b: gtk::TreeIter =
             glib::translate::from_glib_borrow(tree_iter_b);
         let callback: &Box<
-            dyn Fn(&gtk::TreeModel, &gtk::TreeIter, &gtk::TreeIter) -> Ordering
+            dyn Fn(gtk::TreeModel, gtk::TreeIter, gtk::TreeIter) -> Ordering
                 + 'static,
         > = &*(user_data as *mut _);
 
-        let res = callback(&tree_model, &tree_iter_a, &tree_iter_b);
+        let res = callback(tree_model, tree_iter_a, tree_iter_b);
 
         match res {
             Ordering::Less => -1,
@@ -85,9 +85,9 @@ fn set_sort_func<O: IsA<gtk::TreeSortable>>(
         let _callback: Box<
             Box<
                 dyn Fn(
-                        &gtk::TreeModel,
-                        &gtk::TreeIter,
-                        &gtk::TreeIter,
+                        gtk::TreeModel,
+                        gtk::TreeIter,
+                        gtk::TreeIter,
                     ) -> Ordering
                     + 'static,
             >,
