@@ -158,8 +158,7 @@ impl GtkChildTreeIter {
         tree_store: &gtk::TreeStore,
         nix_store_res: &'a NixStoreRes,
     ) -> Option<&'a NixQueryEntry> {
-        let tree_path =
-            GtkChildTreePath::new(tree_store.get_path(self.get())?);
+        let tree_path = GtkChildTreePath::new(tree_store.get_path(self.get())?);
         tree_path.nix_query_tree_lookup(&nix_store_res.tree)
     }
 }
@@ -337,6 +336,5 @@ pub fn nix_query_entry_for_event_button<'a>(
     let option_child_tree_path =
         event_button_to_child_tree_path(state, event_button);
 
-    option_child_tree_path
-        .and_then(|x| x.nix_store_res_lookup(nix_store_res))
+    option_child_tree_path.and_then(|x| x.nix_store_res_lookup(nix_store_res))
 }

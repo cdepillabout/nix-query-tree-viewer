@@ -84,11 +84,7 @@ fn set_sort_func<O: IsA<gtk::TreeSortable>>(
     unsafe extern "C" fn destroy_func(data: glib_sys::gpointer) {
         let _callback: Box<
             Box<
-                dyn Fn(
-                        gtk::TreeModel,
-                        gtk::TreeIter,
-                        gtk::TreeIter,
-                    ) -> Ordering
+                dyn Fn(gtk::TreeModel, gtk::TreeIter, gtk::TreeIter) -> Ordering
                     + 'static,
             >,
         > = Box::from_raw(data as *mut _);
@@ -138,18 +134,27 @@ pub fn change_view_style(state: &ui::State) {
     columns::change_view_style(state);
 }
 
-fn set_sort_func_callback(state: &ui::State, tree_model: gtk::TreeModel, tree_model_sort_iter_a: gtk::TreeIter, tree_model_sort_iter_b: gtk::TreeIter) -> Ordering {
+fn set_sort_func_callback(
+    state: &ui::State,
+    tree_model: gtk::TreeModel,
+    tree_model_sort_iter_a: gtk::TreeIter,
+    tree_model_sort_iter_b: gtk::TreeIter,
+) -> Ordering {
     let sort_order = *state.read_sort_order();
     if let Some(nix_store_res) = &*state.read_nix_store_res() {
-        let tree_store: &gtk::TreeStore = tree_model.downcast_ref().expect("tree_model is not a tree_store");
+        let tree_store: &gtk::TreeStore = tree_model
+            .downcast_ref()
+            .expect("tree_model is not a tree_store");
 
         let child_iter_a = path::GtkChildTreeIter::new(tree_model_sort_iter_a);
         let child_iter_b = path::GtkChildTreeIter::new(tree_model_sort_iter_b);
 
-        let option_nix_query_entry_a: Option<&crate::nix_query_tree::NixQueryEntry> =
-            child_iter_a.nix_store_res_lookup(tree_store, &nix_store_res);
-        let option_nix_query_entry_b: Option<&crate::nix_query_tree::NixQueryEntry> =
-            child_iter_b.nix_store_res_lookup(tree_store, &nix_store_res);
+        let option_nix_query_entry_a: Option<
+            &crate::nix_query_tree::NixQueryEntry,
+        > = child_iter_a.nix_store_res_lookup(tree_store, &nix_store_res);
+        let option_nix_query_entry_b: Option<
+            &crate::nix_query_tree::NixQueryEntry,
+        > = child_iter_b.nix_store_res_lookup(tree_store, &nix_store_res);
 
         match (option_nix_query_entry_a, option_nix_query_entry_b) {
             (Some(nix_query_entry_a), Some(nix_query_entry_b)) => {
