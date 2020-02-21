@@ -2,7 +2,7 @@
 
 [![Actions Status](https://github.com/cdepillabout/nix-query-tree-viewer/workflows/Test/badge.svg)](https://github.com/cdepillabout/nix-query-tree-viewer/actions)
 [![crates.io](https://img.shields.io/crates/v/nix-query-tree-viewer.svg)](https://crates.io/crates/nix-query-tree-viewer)
-[![BSD3 license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
+![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)
 
 `nix-query-tree-viewer` is a convenient way to visualize the output of
 the dependencies of a given path in the Nix store.
