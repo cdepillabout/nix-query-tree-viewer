@@ -181,14 +181,11 @@ fn set_sort_func_callback(
 pub fn set_sort_function(state: &ui::State) {
     let tree_model_sort = state.get_tree_model_sort();
 
-    set_sort_func(
-        &tree_model_sort,
-        Box::new(
-            clone!(@strong state => move|tree_model, tree_model_sort_iter_a, tree_model_sort_iter_b| {
-                set_sort_func_callback(&state, tree_model, tree_model_sort_iter_a, tree_model_sort_iter_b)
-            }),
-        ),
-    );
+    let sort_callback = clone!(@strong state => move|tree_model, tree_model_sort_iter_a, tree_model_sort_iter_b| {
+        set_sort_func_callback(&state, tree_model, tree_model_sort_iter_a, tree_model_sort_iter_b)
+    });
+
+    set_sort_func(&tree_model_sort, Box::new(sort_callback));
 }
 
 pub fn redisplay_data(state: &ui::State) {
