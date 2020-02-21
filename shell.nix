@@ -25,7 +25,7 @@ stdenv.mkDerivation {
     openssl
 
     glib
-    gnome3.gtk3
+    gtk3
   ];
 
   shellHook = ''
