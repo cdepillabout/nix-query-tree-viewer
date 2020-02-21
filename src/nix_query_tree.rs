@@ -39,7 +39,7 @@ impl NixQueryDrv {
         self.drv_name().cmp(&other.drv_name())
     }
 
-    /// Pull out a the hash and derivation name from a `NixQueryDrv`
+    /// Pull out the hash and derivation name from a `NixQueryDrv`
     ///
     /// ```
     /// use nix_query_tree_viewer::nix_query_tree::NixQueryDrv;
@@ -54,6 +54,33 @@ impl NixQueryDrv {
     pub fn hash_and_drv_name(&self) -> String {
         let drv_str = self.0.to_string_lossy();
         String::from((drv_str).trim_start_matches("/nix/store/"))
+    }
+
+    /// Pull out a truncated hash and derivation name from a `NixQueryDrv`
+    ///
+    /// ```
+    /// use nix_query_tree_viewer::nix_query_tree::NixQueryDrv;
+    ///
+    /// let nix_query_drv =
+    ///     NixQueryDrv::from("/nix/store/az4kl5slhbkmmy4vj98z3hzxxkan7zza-gnugrep-3.3");
+    /// assert_eq!(
+    ///     nix_query_drv.short_hash_and_drv_name(),
+    ///     String::from("az4kl5s..gnugrep-3.3")
+    /// );
+    /// ```
+    pub fn short_hash_and_drv_name(&self) -> String {
+        let drv_str = self.0.to_string_lossy();
+        let drv_str_no_store = String::from((drv_str).trim_start_matches("/nix/store/"));
+        let option_drv_name = drv_str_no_store.find('-').and_then(|i| drv_str_no_store.get(i+1..));
+        let option_short_hash = drv_str_no_store.get(0..7);
+        match (option_drv_name, option_short_hash) {
+            (Some (drv_name), Some (short_hash)) => {
+                format!("{}..{}", short_hash, drv_name)
+            }
+            _ => {
+                panic!("Ill-formed nix path")
+            }
+        }
     }
 
     /// Pull out a derivation name from a `NixQueryDrv`.
@@ -163,6 +190,10 @@ impl NixQueryEntry {
 
     pub fn hash_and_drv_name(&self) -> String {
         self.0.hash_and_drv_name()
+    }
+
+    pub fn short_hash_and_drv_name(&self) -> String {
+        self.0.short_hash_and_drv_name()
     }
 
     pub fn drv_name(&self) -> String {

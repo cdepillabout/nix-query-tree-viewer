@@ -46,6 +46,8 @@
       <column type="gchararray"/>
       <!-- column-name hashAndDrvName -->
       <column type="gchararray"/>
+      <!-- column-name shortHashAndDrvName -->
+      <column type="gchararray"/>
       <!-- column-name onlyDrvName -->
       <column type="gchararray"/>
     </columns>
@@ -183,6 +185,7 @@
                     <items>
                       <item id="viewComboBoxFullPath" translatable="yes">Full Path</item>
                       <item id="viewComboBoxHashAndDrvName" translatable="yes">Hash and Drv Name</item>
+                      <item id="viewComboBoxShortHashAndDrvName" translatable="yes">Short hash and Drv Name</item>
                       <item id="viewComboBoxOnlyDrvName" translatable="yes">Only Drv Name</item>
                     </items>
                   </object>
