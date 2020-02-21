@@ -38,7 +38,7 @@ impl<T> Tree<T> {
     {
         let mut map = TreePathMap::new();
         let root_path = Path::new();
-        map.insert(f(&self.item), &root_path);
+        map.insert(f(&self.item), root_path.clone());
         map.insert_children_map(&self.children, &root_path, f);
         map
     }
@@ -101,11 +101,11 @@ where
     }
 
     /// Insert a mapping from `U` to `Path`.
-    pub fn insert(&mut self, k: U, path: &Path) {
+    pub fn insert(&mut self, k: U, path: Path) {
         self.0
             .entry(k)
             .and_modify(|paths| paths.push(path.clone()))
-            .or_insert_with(|| vec![path.clone()]);
+            .or_insert_with(|| vec![path]);
     }
 
     /// Lookup the first `Path` for a given item.
@@ -131,7 +131,7 @@ where
         for (i, child) in children.iter().enumerate() {
             let mut child_path = path.clone();
             child_path.push_back(i);
-            self.insert(f(&child.item), &child_path);
+            self.insert(f(&child.item), child_path.clone());
             self.insert_children_map(&child.children, &child_path, f);
         }
     }

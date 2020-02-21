@@ -152,9 +152,9 @@ pub fn set_sort_function(state: &ui::State) {
                     let child_iter_a = path::GtkChildTreeIter::new(tree_model_sort_iter_a);
                     let child_iter_b = path::GtkChildTreeIter::new(tree_model_sort_iter_b);
 
-                    let option_nix_query_entry_a: Option<crate::nix_query_tree::NixQueryEntry> =
+                    let option_nix_query_entry_a: Option<&crate::nix_query_tree::NixQueryEntry> =
                         child_iter_a.nix_store_res_lookup(tree_store, &nix_store_res);
-                    let option_nix_query_entry_b: Option<crate::nix_query_tree::NixQueryEntry> =
+                    let option_nix_query_entry_b: Option<&crate::nix_query_tree::NixQueryEntry> =
                         child_iter_b.nix_store_res_lookup(tree_store, &nix_store_res);
 
                     match (option_nix_query_entry_a, option_nix_query_entry_b) {

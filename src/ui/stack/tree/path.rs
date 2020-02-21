@@ -17,8 +17,8 @@ impl std::fmt::Debug for GtkChildTreePath {
 }
 
 impl GtkChildTreePath {
-    pub fn new(tree_path: &gtk::TreePath) -> Self {
-        GtkChildTreePath(tree_path.clone())
+    pub fn new(tree_path: gtk::TreePath) -> Self {
+        GtkChildTreePath(tree_path)
     }
 
     fn get(&self) -> &gtk::TreePath {
@@ -41,7 +41,7 @@ impl GtkChildTreePath {
         vec_indices.insert(0, 0);
         let gtk_child_tree_path =
             gtk::TreePath::new_from_indicesv(&vec_indices);
-        GtkChildTreePath::new(&gtk_child_tree_path)
+        GtkChildTreePath::new(gtk_child_tree_path)
     }
 
     pub fn to_path(&self) -> tree::Path {
@@ -57,17 +57,17 @@ impl GtkChildTreePath {
         )
     }
 
-    pub fn nix_query_tree_lookup(
-        self,
-        nix_query_tree: &NixQueryTree,
-    ) -> Option<NixQueryEntry> {
-        nix_query_tree.lookup(self.to_path()).cloned()
+    pub fn nix_query_tree_lookup<'a>(
+        &self,
+        nix_query_tree: &'a NixQueryTree,
+    ) -> Option<&'a NixQueryEntry> {
+        nix_query_tree.lookup(self.to_path())
     }
 
-    pub fn nix_store_res_lookup(
-        self,
-        nix_store_res: &NixStoreRes,
-    ) -> Option<NixQueryEntry> {
+    pub fn nix_store_res_lookup<'a>(
+        &self,
+        nix_store_res: &'a NixStoreRes,
+    ) -> Option<&'a NixQueryEntry> {
         self.nix_query_tree_lookup(&nix_store_res.tree)
     }
 }
@@ -82,7 +82,7 @@ impl std::fmt::Debug for GtkParentTreePath {
         write!(
             f,
             "GtkParentTreePath(actual: {:?})",
-            GtkChildTreePath::new(&self.0.clone()).to_path()
+            GtkChildTreePath::new(self.0.clone()).to_path()
         )
     }
 }
@@ -103,7 +103,7 @@ impl GtkParentTreePath {
         let parent_tree_path = tree_model_sort
             .convert_path_to_child_path(self.get())
             .expect("child_tree_path should always be able to be converted to a child_tree_path");
-        GtkChildTreePath::new(&parent_tree_path)
+        GtkChildTreePath::new(parent_tree_path)
     }
 
     #[allow(dead_code)]
@@ -120,21 +120,21 @@ impl GtkParentTreePath {
     }
 
     #[allow(dead_code)]
-    pub fn nix_query_tree_lookup(
+    pub fn nix_query_tree_lookup<'a>(
         &self,
         tree_model_sort: &gtk::TreeModelSort,
-        nix_query_tree: &NixQueryTree,
-    ) -> Option<NixQueryEntry> {
+        nix_query_tree: &'a NixQueryTree,
+    ) -> Option<&'a NixQueryEntry> {
         self.into_child(tree_model_sort)
             .nix_query_tree_lookup(nix_query_tree)
     }
 
     #[allow(dead_code)]
-    pub fn nix_store_res_lookup(
+    pub fn nix_store_res_lookup<'a>(
         &self,
         tree_model_sort: &gtk::TreeModelSort,
-        nix_store_res: &NixStoreRes,
-    ) -> Option<NixQueryEntry> {
+        nix_store_res: &'a NixStoreRes,
+    ) -> Option<&'a NixQueryEntry> {
         self.into_child(tree_model_sort)
             .nix_store_res_lookup(nix_store_res)
     }
@@ -153,13 +153,13 @@ impl GtkChildTreeIter {
         &self.0
     }
 
-    pub fn nix_store_res_lookup(
+    pub fn nix_store_res_lookup<'a>(
         &self,
         tree_store: &gtk::TreeStore,
-        nix_store_res: &NixStoreRes,
-    ) -> Option<NixQueryEntry> {
+        nix_store_res: &'a NixStoreRes,
+    ) -> Option<&'a NixQueryEntry> {
         let tree_path =
-            GtkChildTreePath::new(&tree_store.get_path(self.get())?);
+            GtkChildTreePath::new(tree_store.get_path(self.get())?);
         tree_path.nix_query_tree_lookup(&nix_store_res.tree)
     }
 }
@@ -278,12 +278,12 @@ fn event_button_to_child_tree_path(
         .map(|tuple| tuple.0)
 }
 
-fn is_for_recurse_column_child(
+fn is_for_recurse_column_child<'a>(
     state: &ui::State,
     tree_view_column: &gtk::TreeViewColumn,
     child_tree_path: GtkChildTreePath,
-    nix_store_res: &NixStoreRes,
-) -> Option<NixQueryEntry> {
+    nix_store_res: &'a NixStoreRes,
+) -> Option<&'a NixQueryEntry> {
     let tree_view = state.get_tree_view();
     let option_column = TreeViewCol::from_gtk(&tree_view, tree_view_column);
     let option_nix_query_entry_is_recurse = child_tree_path
@@ -296,12 +296,12 @@ fn is_for_recurse_column_child(
     }
 }
 
-pub fn is_for_recurse_column_parent(
+pub fn is_for_recurse_column_parent<'a>(
     state: &ui::State,
     tree_view_column: &gtk::TreeViewColumn,
     parent_tree_path: &GtkParentTreePath,
-    nix_store_res: &NixStoreRes,
-) -> Option<NixQueryEntry> {
+    nix_store_res: &'a NixStoreRes,
+) -> Option<&'a NixQueryEntry> {
     let tree_model_sort = state.get_tree_model_sort();
     let child_tree_path = parent_tree_path.into_child(&tree_model_sort);
     is_for_recurse_column_child(
@@ -312,11 +312,11 @@ pub fn is_for_recurse_column_parent(
     )
 }
 
-pub fn is_event_button_for_recurse_column(
+pub fn is_event_button_for_recurse_column<'a>(
     state: &ui::State,
     event_button: &gdk::EventButton,
-    nix_store_res: &NixStoreRes,
-) -> Option<NixQueryEntry> {
+    nix_store_res: &'a NixStoreRes,
+) -> Option<&'a NixQueryEntry> {
     event_button_to_parent_tree_path_column(state, event_button).and_then(
         |(parent_tree_path, tree_view_column)| {
             is_for_recurse_column_parent(
@@ -329,11 +329,11 @@ pub fn is_event_button_for_recurse_column(
     )
 }
 
-pub fn nix_query_entry_for_event_button(
+pub fn nix_query_entry_for_event_button<'a>(
     state: &ui::State,
     event_button: &gdk::EventButton,
-    nix_store_res: &NixStoreRes,
-) -> Option<NixQueryEntry> {
+    nix_store_res: &'a NixStoreRes,
+) -> Option<&'a NixQueryEntry> {
     let option_child_tree_path =
         event_button_to_child_tree_path(state, event_button);
 
