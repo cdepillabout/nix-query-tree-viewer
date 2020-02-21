@@ -7,7 +7,7 @@
 `nix-query-tree-viewer` is a convenient way to visualize the output of
 the dependencies of a given path in the Nix store.
 
-![image of nix-query-tree-viewer](./img/screenshot.png)
+![image of nix-query-tree-viewer](./imgs/screenshot.png)
 
 This is the same tree information that `nix-store --query --tree <PATH>` outputs,
 but `nix-query-tree-viewer` makes it easier to understand and interact with.
@@ -52,7 +52,7 @@ For example, here is the same picture as above, but with two of the branches
 open:
 
 
-![image of nix-query-tree-viewer with two branches open](./img/screenshot2.png)
+![image of nix-query-tree-viewer with two branches open](./imgs/screenshot2.png)
 
 ## Finding Paths for Derivations
 
