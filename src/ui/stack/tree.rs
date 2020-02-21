@@ -138,6 +138,41 @@ pub fn change_view_style(state: &ui::State) {
     columns::change_view_style(state);
 }
 
+fn set_sort_func_callback(state: &ui::State, tree_model: gtk::TreeModel, tree_model_sort_iter_a: gtk::TreeIter, tree_model_sort_iter_b: gtk::TreeIter) -> Ordering {
+    let sort_order = *state.read_sort_order();
+    if let Some(nix_store_res) = &*state.read_nix_store_res() {
+        let tree_store: &gtk::TreeStore = tree_model.downcast_ref().expect("tree_model is not a tree_store");
+
+        let child_iter_a = path::GtkChildTreeIter::new(tree_model_sort_iter_a);
+        let child_iter_b = path::GtkChildTreeIter::new(tree_model_sort_iter_b);
+
+        let option_nix_query_entry_a: Option<&crate::nix_query_tree::NixQueryEntry> =
+            child_iter_a.nix_store_res_lookup(tree_store, &nix_store_res);
+        let option_nix_query_entry_b: Option<&crate::nix_query_tree::NixQueryEntry> =
+            child_iter_b.nix_store_res_lookup(tree_store, &nix_store_res);
+
+        match (option_nix_query_entry_a, option_nix_query_entry_b) {
+            (Some(nix_query_entry_a), Some(nix_query_entry_b)) => {
+                match sort_order {
+                    ui::SortOrder::NixStoreOrigOutput => {
+                        println!("The sort function should never be called when the sort order is NixStoreOrigOutput!!!");
+                        Ordering::Equal
+                    }
+                    ui::SortOrder::AlphabeticalHash => {
+                        nix_query_entry_a.cmp_hash(&nix_query_entry_b)
+                    }
+                    ui::SortOrder::AlphabeticalDrvName => {
+                        nix_query_entry_a.cmp_drv_name(&nix_query_entry_b)
+                    }
+                }
+            }
+            _ => panic!("Not able to get an ordering for one of the nix_query_entries.  This should never happen."),
+        }
+    } else {
+        panic!("The nix_store_res in state hasn't been set yet.  This should never happen.");
+    }
+}
+
 pub fn set_sort_function(state: &ui::State) {
     let tree_model_sort = state.get_tree_model_sort();
 
@@ -145,38 +180,7 @@ pub fn set_sort_function(state: &ui::State) {
         &tree_model_sort,
         Box::new(
             clone!(@strong state => move|tree_model, tree_model_sort_iter_a, tree_model_sort_iter_b| {
-                let sort_order = *state.read_sort_order();
-                if let Some(nix_store_res) = &*state.read_nix_store_res() {
-                    let tree_store: &gtk::TreeStore = tree_model.downcast_ref().expect("tree_model is not a tree_store");
-
-                    let child_iter_a = path::GtkChildTreeIter::new(tree_model_sort_iter_a);
-                    let child_iter_b = path::GtkChildTreeIter::new(tree_model_sort_iter_b);
-
-                    let option_nix_query_entry_a: Option<&crate::nix_query_tree::NixQueryEntry> =
-                        child_iter_a.nix_store_res_lookup(tree_store, &nix_store_res);
-                    let option_nix_query_entry_b: Option<&crate::nix_query_tree::NixQueryEntry> =
-                        child_iter_b.nix_store_res_lookup(tree_store, &nix_store_res);
-
-                    match (option_nix_query_entry_a, option_nix_query_entry_b) {
-                        (Some(nix_query_entry_a), Some(nix_query_entry_b)) => {
-                            match sort_order {
-                                ui::SortOrder::NixStoreOrigOutput => {
-                                    println!("The sort function should never be called when the sort order is NixStoreOrigOutput!!!");
-                                    Ordering::Equal
-                                }
-                                ui::SortOrder::AlphabeticalHash => {
-                                    nix_query_entry_a.cmp_hash(&nix_query_entry_b)
-                                }
-                                ui::SortOrder::AlphabeticalDrvName => {
-                                    nix_query_entry_a.cmp_drv_name(&nix_query_entry_b)
-                                }
-                            }
-                        }
-                        _ => panic!("Not able to get an ordering for one of the nix_query_entries.  This should never happen."),
-                    }
-                } else {
-                    panic!("The nix_store_res in state hasn't been set yet.  This should never happen.");
-                }
+                set_sort_func_callback(&state, tree_model, tree_model_sort_iter_a, tree_model_sort_iter_b)
             }),
         ),
     );
