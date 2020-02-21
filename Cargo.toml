@@ -8,7 +8,7 @@ license = "MIT"
 repository = "https://github.com/cdepillabout/nix-query-tree-viewer"
 readme = "README.md"
 keywords = ["gtk", "nix", "nix-store", "gui"]
-categories = ["tools"]
+categories = ["gui"]
 
 [dependencies]
 gdk = "0.12.0"
