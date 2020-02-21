@@ -67,10 +67,8 @@ impl Path {
         }
     }
 
-    pub fn push_back(&self, value: usize) -> Path {
-        let mut new_path = self.clone();
-        new_path.0.push_back(value);
-        new_path
+    pub fn push_back(&mut self, value: usize) {
+        self.0.push_back(value);
     }
 
     pub fn new() -> Self {
@@ -131,7 +129,8 @@ where
         f: &dyn Fn(&T) -> U,
     ) {
         for (i, child) in children.iter().enumerate() {
-            let child_path = path.push_back(i);
+            let mut child_path = path.clone();
+            child_path.push_back(i);
             self.insert(f(&child.item), &child_path);
             self.insert_children_map(&child.children, &child_path, f);
         }
