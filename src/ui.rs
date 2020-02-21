@@ -111,11 +111,11 @@ fn handle_msg_recv(state: &State, msg: Message) {
     }
 }
 
-fn app_activate(app: &gtk::Application) {
+fn app_activate(app: gtk::Application) {
     let (sender, receiver) =
         glib::MainContext::channel(glib::source::PRIORITY_DEFAULT);
 
-    let state = State::new(app, &sender);
+    let state = State::new(app, sender);
 
     let window: gtk::ApplicationWindow = state.get_app_win();
     window.set_application(Some(&state.app));
@@ -147,7 +147,7 @@ pub fn run() {
     )
     .expect("Application::new failed");
 
-    uiapp.connect_activate(move |app| app_activate(&app));
+    uiapp.connect_activate(|app| app_activate(app.clone()));
 
     // uiapp.run(&env::args().collect::<Vec<_>>());
     uiapp.run(&[]);

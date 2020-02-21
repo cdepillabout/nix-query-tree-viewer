@@ -78,11 +78,11 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(app: &gtk::Application, sender: &glib::Sender<Message>) -> Self {
+    pub fn new(app: gtk::Application, sender: glib::Sender<Message>) -> Self {
         State {
-            app: app.clone(),
+            app,
             builder: builder::create(),
-            sender: sender.clone(),
+            sender,
             nix_store_res: Arc::new(RwLock::new(None)),
             sort_order: Default::default(),
             view_style: Default::default(),
