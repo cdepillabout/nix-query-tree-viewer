@@ -30,7 +30,13 @@ fn insert_child(
             .iter()
             .map(|&i| i as u32)
             .collect::<Vec<u32>>(),
-        &[&drv_str, &recurse_str, &hash_and_drv_name, &short_hash_and_drv_name, &only_drv_name],
+        &[
+            &drv_str,
+            &recurse_str,
+            &hash_and_drv_name,
+            &short_hash_and_drv_name,
+            &only_drv_name,
+        ],
     );
     insert_children(tree_store, &this_iter, children);
 }
