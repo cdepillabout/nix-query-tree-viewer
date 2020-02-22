@@ -70,7 +70,7 @@ impl NixQueryDrv {
     /// ```
     pub fn short_hash_and_drv_name(&self) -> String {
         let drv_str = self.0.to_string_lossy();
-        let drv_str_no_store = String::from((drv_str).trim_start_matches("/nix/store/"));
+        let drv_str_no_store = String::from(drv_str.trim_start_matches("/nix/store/"));
         let option_drv_name = drv_str_no_store.find('-').and_then(|i| drv_str_no_store.get(i+1..));
         let option_short_hash = drv_str_no_store.get(0..7);
         match (option_drv_name, option_short_hash) {
