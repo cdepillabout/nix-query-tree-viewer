@@ -3,7 +3,7 @@ let
     nixQueryTreeViewer =
       self.rustPlatform.buildRustPackage rec {
         name = "nix-query-tree-viewer-${version}";
-        version = "0.1.0";
+        version = "0.2.0";
 
         src = self.nix-gitignore.gitignoreSource [] ./.;
 

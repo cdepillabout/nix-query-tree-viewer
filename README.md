@@ -2,6 +2,7 @@
 
 [![Actions Status](https://github.com/cdepillabout/nix-query-tree-viewer/workflows/Test/badge.svg)](https://github.com/cdepillabout/nix-query-tree-viewer/actions)
 [![crates.io](https://img.shields.io/crates/v/nix-query-tree-viewer.svg)](https://crates.io/crates/nix-query-tree-viewer)
+[![dependency status](https://deps.rs/repo/github/cdepillabout/nix-query-tree-viewer/status.svg)](https://deps.rs/repo/github/cdepillabout/nix-query-tree-viewer)
 ![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)
 
 `nix-query-tree-viewer` is a convenient way to visualize the output of
@@ -20,7 +21,27 @@ You can run `nix-query-tree-viewer` by passing it a path in the Nix store:
 $ nix-query-tree-viewer /nix/store/ghzg4kg0sjif58smj2lfm2bdvjwim85y-gcc-wrapper-7.4.0
 ```
 
-## Why
+## Installing
+
+`nix-query-tree-viewer` can be installed with either Nix or Cargo.
+
+Installing with `nix-env`:
+
+```console
+$ nix-env -f channel:nixos-unstable -iA hello
+```
+
+This is convenient if you just want to use `nix-query-tree-viewer`.
+
+Installing with `cargo`:
+
+```console
+$ cargo install nix-query-tree-viewer
+```
+
+You'll need to have GTK libraries available in your environment for this to work.
+
+## Why use `nix-query-tree-viewer`?
 
 The command `nix-store --query --tree` can be used to see the dependencies of a
 path in the Nix store in a tree format:
@@ -50,7 +71,6 @@ branches.
 
 For example, here is the same picture as above, but with two of the branches
 open:
-
 
 ![image of nix-query-tree-viewer with two branches open](./imgs/screenshot2.png)
 
@@ -86,7 +106,7 @@ let you see the run-time dependencies of a derivation, while passing the output
 of `nix-instantiate` will let you see the build-time dependencies of a
 derivation.
 
-# Contributions
+## Contributions
 
 Feel free to open an issue or PR for any
 bugs/problems/suggestions/improvements.
