@@ -16,6 +16,7 @@ fn insert_child(
     let drv: &NixQueryDrv = &item.0;
     let drv_str = drv.to_string();
     let hash_and_drv_name = drv.hash_and_drv_name();
+    let short_hash_and_drv_name = drv.short_hash_and_drv_name();
     let only_drv_name = drv.drv_name();
     let recurse_str = if item.1 == Recurse::Yes {
         "go to tree instance"
@@ -29,7 +30,7 @@ fn insert_child(
             .iter()
             .map(|&i| i as u32)
             .collect::<Vec<u32>>(),
-        &[&drv_str, &recurse_str, &hash_and_drv_name, &only_drv_name],
+        &[&drv_str, &recurse_str, &hash_and_drv_name, &short_hash_and_drv_name, &only_drv_name],
     );
     insert_children(tree_store, &this_iter, children);
 }

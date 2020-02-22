@@ -40,6 +40,7 @@ impl TryFrom<u32> for SortOrder {
 pub enum ViewStyle {
     FullPath = 0,
     HashAndDrvName,
+    ShortHashAndDrvName,
     OnlyDrvName,
 }
 
@@ -56,7 +57,8 @@ impl TryFrom<u32> for ViewStyle {
         match value {
             0 => Ok(ViewStyle::FullPath),
             1 => Ok(ViewStyle::HashAndDrvName),
-            2 => Ok(ViewStyle::OnlyDrvName),
+            2 => Ok(ViewStyle::ShortHashAndDrvName),
+            3 => Ok(ViewStyle::OnlyDrvName),
             n => Err(n),
         }
     }

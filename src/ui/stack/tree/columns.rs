@@ -10,6 +10,7 @@ pub enum Column {
     FullPath = 0,
     Recurse,
     HashAndDrvName,
+    ShortHashAndDrvName,
     OnlyDrvName,
 }
 
@@ -27,16 +28,18 @@ impl TryFrom<usize> for Column {
 
 impl Column {
     // Is there some way to derive these types of things?
-    const LIST: [Column; 4] = [
+    const LIST: [Column; 5] = [
         Column::FullPath,
         Column::Recurse,
         Column::HashAndDrvName,
+        Column::ShortHashAndDrvName,
         Column::OnlyDrvName,
     ];
-    pub const INDICIES: [usize; 4] = [
+    pub const INDICIES: [usize; 5] = [
         Column::FullPath as usize,
         Column::Recurse as usize,
         Column::HashAndDrvName as usize,
+        Column::ShortHashAndDrvName as usize,
         Column::OnlyDrvName as usize,
     ];
 }
@@ -60,6 +63,14 @@ pub fn change_view_style(state: &ui::State) {
                 &item_renderer,
                 "text",
                 Column::HashAndDrvName as i32,
+            );
+        }
+
+        ui::ViewStyle::ShortHashAndDrvName => {
+            column.add_attribute(
+                &item_renderer,
+                "text",
+                Column::ShortHashAndDrvName as i32,
             );
         }
         ui::ViewStyle::OnlyDrvName => {
