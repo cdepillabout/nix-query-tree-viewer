@@ -9,7 +9,7 @@ let
 
         buildInputs = [
           self.glib
-          self.gnome3.gtk3
+          self.gtk3
         ];
 
         cargoSha256 = "1cdni03x161hvpzbkqq4g11c86f3scygrpjzbdirvgx3fdh03qv9";
