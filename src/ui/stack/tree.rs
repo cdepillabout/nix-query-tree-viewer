@@ -37,6 +37,7 @@ pub fn setup(state: &ui::State) {
 }
 
 /// Low-level (unsafe) function for setting the sorting function.
+#[allow(unsafe_code)]
 fn set_sort_func<O: IsA<gtk::TreeSortable>>(
     tree_model_sort: &O,
     sort_func: Box<
