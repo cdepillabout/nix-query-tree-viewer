@@ -28,7 +28,7 @@ $ nix-query-tree-viewer /nix/store/ghzg4kg0sjif58smj2lfm2bdvjwim85y-gcc-wrapper-
 Installing with `nix-env`:
 
 ```console
-$ nix-env -f channel:nixos-unstable -iA hello
+$ nix-env -f channel:nixos-unstable -iA nix-query-tree-viewer
 ```
 
 This is convenient if you just want to use `nix-query-tree-viewer`.
