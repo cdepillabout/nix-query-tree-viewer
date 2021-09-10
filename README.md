@@ -122,7 +122,7 @@ as `rustup`.
 tools:
 
 ```console
-$ rustup toolchain install 1.42.0
+$ rustup toolchain install 1.55.0
 ```
 
 You should now have `cargo` and `rustc`, which can be used for building the project:
