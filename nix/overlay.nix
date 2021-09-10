@@ -12,7 +12,7 @@ final: prev: {
         final.gtk3
       ];
 
-      cargoSha256 = "sha256-gD9lWnf6i7YyulbMOnPrrz1/c4bUMgoSY3bxIy+U+98=";
+      cargoSha256 = "sha256-NSLBIvgo5EdCvZq52d+UbAa7K4uOST++2zbhO9DW38E=";
     };
 
   nix-query-tree-viewer-shell = final.stdenv.mkDerivation {
