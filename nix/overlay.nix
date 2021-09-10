@@ -3,16 +3,16 @@ final: prev: {
   nix-query-tree-viewer =
     final.rustPlatform.buildRustPackage rec {
       name = "nix-query-tree-viewer-${version}";
-      version = "0.2.0";
+      version = "0.2.1";
 
-      src = final.nix-gitignore.gitignoreSource [] ./.;
+      src = final.nix-gitignore.gitignoreSource [] ./..;
 
       buildInputs = [
         final.glib
         final.gtk3
       ];
 
-      cargoSha256 = "1cdni03x161hvpzbkqq4g11c86f3scygrpjzbdirvgx3fdh03qv9";
+      cargoSha256 = "sha256-gD9lWnf6i7YyulbMOnPrrz1/c4bUMgoSY3bxIy+U+98=";
     };
 
   nix-query-tree-viewer-shell = final.stdenv.mkDerivation {
