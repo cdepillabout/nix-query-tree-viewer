@@ -31,10 +31,10 @@ pub fn nix_query_entry_parser(
 }
 
 named!(parse_branch_start<&str, &str>,
-    tag!("+---"));
+    alt!(tag!("+---") | tag!("├───") | tag!("└───")));
 
 named!(parse_extra_level<&str, &str>,
-    alt!(tag!("|   ") | tag!("    ")));
+    alt!(tag!("|   ") | tag!("    ") | tag!("│   ")));
 
 /// Run `parse_extra_level` exactly `level` times.
 fn parse_extra_levels(level: usize) -> impl Fn(&str) -> IResult<&str, ()> {
@@ -157,6 +157,42 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_nix_query_tree_simple_unicode() {
+        let raw_input = indoc!(
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+            └───/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+            "
+        );
+        let hello_drv: NixQueryDrv =
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let actual_tree = Tree::new(
+            NixQueryEntry(hello_drv.clone(), Recurse::No),
+            vec![Tree::singleton(NixQueryEntry(hello_drv, Recurse::Yes))],
+        );
+
+        let r = parse_nix_query_tree(raw_input);
+        assert_eq!(r, Ok(("", NixQueryTree(actual_tree))));
+    }
+
+    #[test]
+    fn test_parse_nix_query_tree_simple_unicode2() {
+        let raw_input = indoc!(
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+            ├───/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+            "
+        );
+        let hello_drv: NixQueryDrv =
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let actual_tree = Tree::new(
+            NixQueryEntry(hello_drv.clone(), Recurse::No),
+            vec![Tree::singleton(NixQueryEntry(hello_drv, Recurse::Yes))],
+        );
+
+        let r = parse_nix_query_tree(raw_input);
+        assert_eq!(r, Ok(("", NixQueryTree(actual_tree))));
+    }
+
+    #[test]
     fn test_parse_branch_start() {
         let raw_input = "+---";
         let r = parse_branch_start(raw_input);
@@ -230,12 +266,69 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_nix_query_tree_simple_multi_children_unicode() {
+        let raw_input = indoc!(
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+            ├───/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27
+            ├───/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27 [...]
+            └───/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+            "
+        );
+        let hello_drv: NixQueryDrv =
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let glibc_drv: NixQueryDrv =
+            "/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27".into();
+        let actual_tree = Tree::new(
+            NixQueryEntry(hello_drv.clone(), Recurse::No),
+            vec![
+                Tree::singleton(NixQueryEntry(glibc_drv.clone(), Recurse::No)),
+                Tree::singleton(NixQueryEntry(glibc_drv, Recurse::Yes)),
+                Tree::singleton(NixQueryEntry(hello_drv, Recurse::Yes)),
+            ],
+        );
+
+        let r = parse_nix_query_tree(raw_input);
+        assert_eq!(r, Ok(("", NixQueryTree(actual_tree))));
+    }
+
+    #[test]
     fn test_parse_nix_query_tree_simple_multi_levels() {
         let raw_input = indoc!(
             "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
             +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27
             |   +---/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27 [...]
             +---/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
+            "
+        );
+        let hello_drv: NixQueryDrv =
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10".into();
+        let glibc_drv: NixQueryDrv =
+            "/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27".into();
+        let actual_tree = Tree::new(
+            NixQueryEntry(hello_drv.clone(), Recurse::No),
+            vec![
+                Tree::new(
+                    NixQueryEntry(glibc_drv.clone(), Recurse::No),
+                    vec![Tree::singleton(NixQueryEntry(
+                        glibc_drv,
+                        Recurse::Yes,
+                    ))],
+                ),
+                Tree::singleton(NixQueryEntry(hello_drv, Recurse::Yes)),
+            ],
+        );
+
+        let r = parse_nix_query_tree(raw_input);
+        assert_eq!(r, Ok(("", NixQueryTree(actual_tree))));
+    }
+
+    #[test]
+    fn test_parse_nix_query_tree_simple_multi_levels_unicode() {
+        let raw_input = indoc!(
+            "/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10
+            ├───/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27
+            │   └───/nix/store/pnd2kl27sag76h23wa5kl95a76n3k9i3-glibc-2.27 [...]
+            └───/nix/store/qy93dp4a3rqyn2mz63fbxjg228hffwyw-hello-2.10 [...]
             "
         );
         let hello_drv: NixQueryDrv =

@@ -110,3 +110,23 @@ derivation.
 
 Feel free to open an issue or PR for any
 bugs/problems/suggestions/improvements.
+
+## Development
+
+You can get into a development environment by running `nix-shell`.
+
+This `nix-shell` provides the necessary system libraries for building, as well
+as `rustup`.
+
+`rustup` can be used to fetch the latest Rust compiler, as well as related
+tools:
+
+```console
+$ rustup toolchain install 1.42.0
+```
+
+You should now have `cargo` and `rustc`, which can be used for building the project:
+
+```console
+$ cargo build
+```

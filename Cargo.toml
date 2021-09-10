@@ -1,6 +1,6 @@
 [package]
 name = "nix-query-tree-viewer"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["cdepillabout@gmail.com"]
 edition = "2018"
 description = "A GTK viewer for `nix-store --query --tree` output"
